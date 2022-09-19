@@ -1,0 +1,6 @@
+*.sw*
+*.csv*
+*.zip
+*.txt
+VS*
+ueg.py

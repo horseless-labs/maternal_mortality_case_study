@@ -247,10 +247,10 @@ get_code_counts <- function(code, dict1, dict2) {
 
 # Target: determine the amount of overlap in secondary conditions between different buckets.
 # Returns a tibble. Each column is a code that is present in the initial bucket.
-# The column names are codes from the initial bucket
-# The first column is the initial bucket; all values should be 1
-# Each following row is a different bucket.
-# Each value has a 1 if it contains the code naming the row header, or a 0 if not.
+# The column names are the initial buckets
+# The diagonal is the number of rows in each bucket
+# Large values not on the diagonal indicate a large amount of overlap in the codes
+# that patients have between these buckets; further inspection needed.
 
 # The current buckets are as follows
 # abortive, eph, preg, fetal, comp, puerperium, other

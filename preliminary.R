@@ -32,6 +32,9 @@ factor_dataset <- function(mort, year=0) {
   # Removing age codes with 999; not specified
   mort$age[mort$age == 999] <- NA
   
+  # Change "code 10" to "code10"
+  mort <- rename(mort, code10="code 10")
+  
   if(year != 0) {
     mort <- mort %>% add_column(year=year, .after="month")
     mort$year <- as.factor(mort$year)

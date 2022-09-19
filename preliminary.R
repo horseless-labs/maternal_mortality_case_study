@@ -146,6 +146,9 @@ groups <- lst(abortive, high_risk, eph, preg, fetal, comp, encounter, puerperium
 View(groups)
 
 # Search for arbitrary secondary codes
+# Takes a mort tibble and a regular expression representing a bucket of codes
+# as arguments.
+# Returns a tibble of all rows that contain matching codes.
 search_secondary_codes <- function(mort, search_code) {
   bucket <- mort[0,]
   
@@ -165,7 +168,6 @@ search_secondary_codes <- function(mort, search_code) {
 encounter <- search_secondary_codes(mort2019, code_buckets[7])
 high_risk <- search_secondary_codes(mort2019, code_buckets[2])
 
-
 # Expanding on preg and other
 # Add a column for the number of conditions
 preg <- add_num_conditions(preg)
@@ -178,7 +180,10 @@ summary(preg$num_conditions)
 summary(other$num_conditions)
 
 # Checking to see conditions in other are secondary codes in preg
-# and vice versa
+# and vice versa.
+# These being the largest groups, it needs to be determined if the conditions
+# accompanying either are at all related.
+# Expanded upon in the codes_in_others function
 other_in_preg <- search_secondary_codes(preg, code_buckets[9])
 preg_in_other <- search_secondary_codes(other, code_buckets[4])
 View(other_in_preg)
@@ -189,6 +194,7 @@ unique_other_codes <- unique(other_codes)
 print(length(other_codes))
 print(length(unique_other_codes))
 
+preg_codes <- get_all_codes(preg)
 unique_preg_codes <- unique(preg_codes)
 print(length(preg_codes))
 print(length(unique_preg_codes))
@@ -207,6 +213,11 @@ code_dict <- function(codes) {
   }
   
   return(dictionary)
+}
+
+
+code_tibble <- function(codes) {
+  
 }
 
 # Return a dictionary by value in descending order
@@ -231,10 +242,33 @@ get_code_counts <- function(code, dict1, dict2) {
   return(c(dict1[code], dict2[code]))
 }
 
-compare_codes <- function(codes, dict1, dict2) {
-  for (code in codes) {
-    print(get_code_counts(code, dict1, dict2))
+# Target: determine the amount of overlap in secondary conditions between different buckets.
+# Returns a tibble. Each column is a code that is present in the initial bucket.
+# The column names are codes from the initial bucket
+# The first column is the initial bucket; all values should be 1
+# Each following row is a different bucket.
+# Each value has a 1 if it contains the code naming the row header, or a 0 if not.
+
+# The current buckets are as follows
+# abortive, eph, preg, fetal, comp, puerperium, other
+codes_in_others <- function(bucket) {
+  groups <- lst(abortive, eph, preg, fetal, comp, puerperium, other)
+  group_codes <- lst()
+  
+  # abortive_codes <- get_all_codes(abortive)
+  # eph_codes <- get_all_codes(eph)
+  # preg_codes <- get_all_codes(preg)
+  # fetal_codes <- get_all_codes(fetal)
+  # comp_codes <- get_all_codes(comp)
+  # puerperium_codes <- get_all_codes(puerperium)
+  # other_codes <- get_all_codes(other)
+  for (group in groups) {
+    if (!all_equal(bucket, group)) {
+      group_codes <- get_all_codes(group)
+    }
   }
+  
+  print(group_codes)
 }
 
-compare_codes(i, preg_codes_dict, other_codes_dict)
+codes_in_others(abortive)

@@ -52,7 +52,7 @@ mort2015 <- factor_dataset(mort2015, 2015)
 # Make one general dataset for comparison
 mort_combined <- bind_rows(mort2019, mort2018, mort2017, mort2016, mort2015)
 
-View(mort2019)
+# View(mort2019)
 # View(mort2018)
 # View(mort2017)
 # View(mort2016)
@@ -146,7 +146,7 @@ puerperium <- group_codes(mort2019, code_buckets[8])
 other <- group_codes(mort2019, code_buckets[9])
 
 groups <- lst(abortive, high_risk, eph, preg, fetal, comp, encounter, puerperium, other)
-View(groups)
+# View(groups)
 
 # Search for arbitrary secondary codes
 # Takes a mort tibble and a regular expression representing a bucket of codes
@@ -175,8 +175,8 @@ high_risk <- search_secondary_codes(mort2019, code_buckets[2])
 # Add a column for the number of conditions
 preg <- add_num_conditions(preg)
 other <- add_num_conditions(other)
-View(preg)
-View(other)
+# View(preg)
+# View(other)
 
 # Small descriptive statistical summary of both
 summary(preg$num_conditions)
@@ -189,8 +189,8 @@ summary(other$num_conditions)
 # Expanded upon in the codes_in_others function
 other_in_preg <- search_secondary_codes(preg, code_buckets[9])
 preg_in_other <- search_secondary_codes(other, code_buckets[4])
-View(other_in_preg)
-View(preg_in_other)
+# View(other_in_preg)
+# View(preg_in_other)
 
 other_codes <- get_all_codes(other)
 unique_other_codes <- unique(other_codes)
@@ -254,24 +254,39 @@ get_code_counts <- function(code, dict1, dict2) {
 
 # The current buckets are as follows
 # abortive, eph, preg, fetal, comp, puerperium, other
-codes_in_others <- function(bucket) {
+codes_matrix <- function(analysand) {
   groups <- lst(abortive, eph, preg, fetal, comp, puerperium, other)
-  group_codes <- lst()
+  code_buckets <- c("O0[0-8]", "O1[0-6]", "O2[0-9]", "O[3|4][0-8]|O39",
+                    "O[6][0-9]|O7[0-7]", "O8[5-9]|O9[0-2]",
+                    "O9[4-9]|O9A")
   
-  # abortive_codes <- get_all_codes(abortive)
-  # eph_codes <- get_all_codes(eph)
-  # preg_codes <- get_all_codes(preg)
-  # fetal_codes <- get_all_codes(fetal)
-  # comp_codes <- get_all_codes(comp)
-  # puerperium_codes <- get_all_codes(puerperium)
-  # other_codes <- get_all_codes(other)
+  others <- tibble(
+    abortive=numeric(),
+    eph=numeric(),
+    preg=numeric(),
+    fetal=numeric(),
+    comp=numeric(),
+    puerperium=numeric(),
+    other=numeric()
+  )
+  
   for (group in groups) {
-    if (!all_equal(bucket, group)) {
-      group_codes <- get_all_codes(group)
+    counts <- c()
+    for (bucket in code_buckets) {
+      counts <- append(counts, nrow(search_secondary_codes(group, bucket)))
     }
+    print(counts)
+    others <- others %>%
+      add_row(abortive=counts[1],
+              eph=counts[2],
+              preg=counts[3],
+              fetal=counts[4],
+              comp=counts[5],
+              puerperium=counts[6],
+              other=counts[7])
   }
   
-  print(group_codes)
+  return(others)
 }
 
-codes_in_others(abortive)
+a <- codes_matrix(abortive)

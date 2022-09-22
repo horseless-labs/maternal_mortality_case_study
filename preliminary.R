@@ -290,3 +290,7 @@ codes_matrix <- function(analysand) {
 }
 
 a <- codes_matrix(abortive)
+a <- a %>% add_column(percent_other=0)
+for (i in 1:nrow(a)) {
+  a[i,8] <- 100 - (a[i,i] / sum(a[i, 1:7])) * 100
+}

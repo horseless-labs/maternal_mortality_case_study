@@ -218,11 +218,6 @@ code_dict <- function(codes) {
   return(dictionary)
 }
 
-
-code_tibble <- function(codes) {
-  
-}
-
 # Return a dictionary by value in descending order
 sort_dict <- function(dictionary) {
   dictionary <- dictionary[order(-unlist(dictionary))]
@@ -296,3 +291,12 @@ for (i in 1:nrow(a)) {
   a[i,8] <- sum(a[i, 1:7])
   a[i,9] <- 100 - (a[i,i] / sum(a[i, 1:7])) * 100
 }
+
+View(comp)
+comp$underlying
+sort(unique(comp$underlying))
+
+comp_underlying <- as_tibble(sort(comp$underlying))
+nums <- as_tibble(table(comp_underlying))
+ggplot(comp_underlying) +
+  geom_bar(mapping = aes(x=value))

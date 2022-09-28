@@ -300,3 +300,18 @@ comp_underlying <- as_tibble(sort(comp$underlying))
 nums <- as_tibble(table(comp_underlying))
 ggplot(comp_underlying) +
   geom_bar(mapping = aes(x=value))
+
+ggplot(comp) +
+  geom_bar(mapping = aes(x=education))
+
+ggplot(comp) +
+  geom_bar(mapping = aes(x=marital_status))
+
+ggplot(comp) +
+  geom_bar(mapping = aes(x=age))
+
+ggplot(comp) +
+  geom_bar(mapping = aes(x=race))
+
+ggplot(comp) +
+  geom_bar(mapping = aes(x=hisp_orig))

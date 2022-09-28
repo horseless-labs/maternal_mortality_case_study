@@ -298,20 +298,39 @@ sort(unique(comp$underlying))
 
 comp_underlying <- as_tibble(sort(comp$underlying))
 nums <- as_tibble(table(comp_underlying))
-ggplot(comp_underlying) +
+
+comp_codes <- ggplot(comp_underlying) +
   geom_bar(mapping = aes(x=value))
 
-ggplot(comp) +
+comp_education <- ggplot(comp) +
   geom_bar(mapping = aes(x=education))
 
-ggplot(comp) +
+comp_marital <- ggplot(comp) +
   geom_bar(mapping = aes(x=marital_status))
 
-ggplot(comp) +
+comp_age <- ggplot(comp) +
   geom_bar(mapping = aes(x=age))
 
-ggplot(comp) +
+comp_rage <- ggplot(comp) +
   geom_bar(mapping = aes(x=race))
 
-ggplot(comp) +
+comp_hisp <- ggplot(comp) +
+  geom_bar(mapping = aes(x=hisp_orig))
+
+fetal_codes <- ggplot(fetal) +
+  geom_bar(mapping = aes(x=codes))
+
+fetal_education <- ggplot(fetal) +
+  geom_bar(mapping = aes(education))
+
+fetal_marital <- ggplot(fetal) +
+  geom_bar(mapping = aes(x=marital_status))
+
+fetal_age <- ggplot(fetal) +
+  geom_bar(mapping = aes(x=age))
+
+fetal_race <- ggplot(fetal) +
+  geom_bar(mapping = aes(x=race))
+
+fetal_hisp <- ggplot(fetal) +
   geom_bar(mapping = aes(x=hisp_orig))

@@ -169,6 +169,8 @@ new_mort2019 <- abortive %>%
   bind_rows(puerperium) %>%
   bind_rows(other)
 
+
+
 # Search for arbitrary secondary codes
 # Takes a mort tibble and a regular expression representing a bucket of codes
 # as arguments.

@@ -169,7 +169,7 @@ new_mort2019 <- abortive %>%
   bind_rows(puerperium) %>%
   bind_rows(other)
 
-
+new_mort2019$bucket <- as.factor(new_mort2019$bucket)
 
 # Search for arbitrary secondary codes
 # Takes a mort tibble and a regular expression representing a bucket of codes

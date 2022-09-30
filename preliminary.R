@@ -148,6 +148,27 @@ other <- group_codes(mort2019, code_buckets[9])
 groups <- lst(abortive, high_risk, eph, preg, fetal, comp, encounter, puerperium, other)
 # View(groups)
 
+add_bucket <- function(mort, bucket_name) {
+  mort <- mort %>% add_column(bucket=bucket_name, .before="underlying")
+  return(mort)
+}
+
+new_mort2019 <- mort2019[0,]
+abortive <- add_bucket(abortive, "abortive")
+eph <- add_bucket(eph, "eph")
+comp <- add_bucket(comp, "comp")
+preg <- add_bucket(preg, "preg")
+fetal <- add_bucket(fetal, "fetal")
+puerperium <- add_bucket(puerperium, "puerperium")
+other <- add_bucket(other, "other")
+new_mort2019 <- abortive %>%
+  bind_rows(eph) %>%
+  bind_rows(comp) %>%
+  bind_rows(preg) %>%
+  bind_rows(fetal) %>%
+  bind_rows(puerperium) %>%
+  bind_rows(other)
+
 # Search for arbitrary secondary codes
 # Takes a mort tibble and a regular expression representing a bucket of codes
 # as arguments.

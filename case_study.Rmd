@@ -6,6 +6,7 @@ output:
 date: "2022-10-04"
 ---
 
+# Initial Setup
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(root.dir = "/home/mireles/horseless/maternal_mortality/mortality")
@@ -237,5 +238,18 @@ mort <- abortive %>%
 Here we add the number of conditions to the main dataset. The underlying condition is excluded because the codes following it always have a more specific version of that code, so it would be redundant.
 
 ```{r}
-mort2 <- add_num_conditions(mort)
+mort <- add_num_conditions(mort)
+```
+
+# Making Things Legible
+The codes are very densy packed and not especially human readable. Fortunately, it will not be difficult to change the tibble such that anyone can see at least the broad demographic characteristics of a given patient. First, we decode `res_status`, or the resident status. This is perhaps confusingly named, as the codes here are indicative of whether the patient is a resident of the state and county (residents), the state but not the county (intrastate residents), out of state but still from the US, and foreign residents.
+
+```{r}
+mort2$res_status <- as.numeric(mort$res_status)
+mort2 <- mort2 %>%
+  filter(!is.na(res_status)) %>%
+  mutate(res_status = case_when(res_status == 1 ~ "resident",
+                                res_status == 2 ~ "intrastate nonresident",
+                                res_status == 3 ~ "interstate nonresident",
+                                res_status == 4 ~ "foreign resident"))
 ```

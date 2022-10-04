@@ -245,13 +245,14 @@ mort <- add_num_conditions(mort)
 The codes are very densy packed and not especially human readable. Fortunately, it will not be difficult to change the tibble such that anyone can see at least the broad demographic characteristics of a given patient. First, we decode `res_status`, or the resident status. This is perhaps confusingly named, as the codes here are indicative of whether the patient is a resident of the state and county (residents), the state but not the county (intrastate residents), out of state but still from the US, and foreign residents.
 
 ```{r}
-mort$res_status <- as.numeric(mort$res_status)
+mort$res_status_decoded <- as.numeric(mort$res_status)
 mort <- mort %>%
-  filter(!is.na(res_status)) %>%
-  mutate(res_status = case_when(res_status == 1 ~ "resident",
+  filter(!is.na(res_status_decoded)) %>%
+  mutate(res_status_decoded = case_when(res_status == 1 ~ "resident",
                                 res_status == 2 ~ "intrastate nonresident",
                                 res_status == 3 ~ "interstate nonresident",
-                                res_status == 4 ~ "foreign resident"))
+                                res_status == 4 ~ "foreign resident")) %>%
+  relocate(res_status_decoded, .after="res_status")
 ```
 
 We do the same for education.
@@ -269,5 +270,5 @@ mort <- mort %>%
                                education == 7 ~ "master's degree",
                                education == 8 ~ "doctorate or professional degree",
                                education == 9 ~ "unknown")) %>%
-  select(res_status, education, education_decoded, everything())
+  relocate(education_decoded, .after="education")
 ```

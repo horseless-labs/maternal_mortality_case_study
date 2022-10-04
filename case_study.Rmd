@@ -181,6 +181,12 @@ group_codes <- function(mort, code) {
 
 ```
 
+The tibble is divided into buckets. It was less obvious before because the codes are opaque to the untrained eye, but here we can see that we have omitted code buckets 2 and 7, representing supervision with high-risk pregnancy and encounter for for delivery, respectively.
+
+According to [Outsource Strategies International](https://www.outsourcestrategies.com/resources/high-risk-pregnancy-icd-10-coding-changes-2017/), O09 is only intended for use in the prenatal period. It is therefore not directly applicable to this case study. Encounter for pregnancy codes are meant specifically for situations where there were no complications during delivery, so it is not immediately relevant here.
+
+Both of these buckets are not represented in the data at the moment, but they are worth keeping in mind as other datasets are brought in and the analysis expands.
+
 ```{r}
 abortive <- group_codes(mort_combined, code_buckets[1])
 eph <- group_codes(mort_combined, code_buckets[3])
@@ -190,7 +196,17 @@ comp <- group_codes(mort_combined, code_buckets[6])
 puerperium <- group_codes(mort_combined, code_buckets[8])
 other <- group_codes(mort_combined, code_buckets[9])
 
-buckets = lst(abortive, eph, preg, fetal, comp, puerperium, other)
+#buckets = lst(abortive, eph, preg, fetal, comp, puerperium, other)
+```
+
+Just for verification of the above:
+
+```{r}
+# TODO: clean this in the final draft
+high_risk <- group_codes(mort_combined, code_buckets[2])
+encounter <- group_codes(mort_combined, code_buckets[7])
+head(high_risk)
+head(encounter)
 ```
 
 ```{r}
@@ -199,6 +215,8 @@ add_bucket <- function(mort, bucket_name) {
   return(mort)
 }
 ```
+
+Here we combine individual buckets back into a single tibble, this time with a column giving each patient the respective broader bucket their underlying condition falls into.
 
 ```{r}
 mort <- mort_combined[0,]

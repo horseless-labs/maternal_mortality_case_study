@@ -77,7 +77,7 @@ def check_maternal(line):
     else:
         return False
 
-header = "res_status, education, month, age, death_loc, marital_status, underlying, code1, code2, code3, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14, code15, code16, code17, code18, code19, code20, race, hisp_orig, hisp_orig_race, occupation_code, industry_code\n"
+header = "res_status,education,month,age,death_loc,marital_status,underlying,code1,code2,code3,code4,code5,code6,code7,code8,code9,code10,code11,code12,code13,code14,code15,code16,code17,code18,code19,code20,race,hisp_orig,hisp_orig_race,occupation_code,industry_code\n"
 
 test = parse(lines[0])
 test = parsed_to_string(test)

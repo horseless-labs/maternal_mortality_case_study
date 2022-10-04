@@ -1,6 +1,8 @@
 ---
 title: "maternal_mortality_case_study"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "2022-10-04"
 ---
 
@@ -21,7 +23,7 @@ It's pertinent to verify that we are in the right working directory.
 ```{r}
 getwd()
 ```
-Because the dataset is loaded as characters, there are columns that need to be converted to other datatypes. Many of these are factors instead of characters. There are also some columns that need to be added for the sake of processing later. Because we are combining many years worth of data, that is a variable to keep track of. Additionally, the ICD-10 codes are externally grouped into larger groups that we will find useful later.
+Because the dataset is loaded as characters, there are columns that need to be converted to other datatypes. Many of these are factors instead of characters. There are also some columns that need to be added for the sake of processing later. Because we are combining many years worth of data, that is a variable to keep track of.
 
 ```{r}
 preprocess_dataset <- function(mort, year=0) {
@@ -106,4 +108,110 @@ mort_combined <- bind_rows(mort2019, mort2018, mort2017, mort2016,
                           mort2011, mort2010, mort2009, mort2008,
                           mort2007, mort2006, mort2005, mort2004,
                           mort2003)
+```
+
+There are more housekeeping functions that we need. The following returns a list of all codes associated with a patient, with the option to include the code of the underlying condition.
+
+```{r}
+get_codes <- function(row, include_underlying=FALSE) {
+  underlying <- which(colnames(row)=="underlying")
+  first_code <- which(colnames(row)=="code1")
+  last_code <- which(colnames(row)=="code20")
+
+  if (include_underlying == TRUE) {
+    codes <- row[c(underlying:last_code)]
+  } else {
+    codes <- row[c(first_code:last_code)]
+  }
+
+  a_codes <- list()
+  for (c in codes) {
+    if (is.na(c)) {
+      return(a_codes)
+    } else {
+      a_codes <- append(a_codes, c)
+    }
+  }
+  return(a_codes)
+}
+```
+
+The following takes a mortality tibble as an argument and returns a version that includes a column with the number of codes associated with the patient, not counting the underlying condition.
+
+```{r}
+add_num_conditions <- function(mort) {
+  num_conditions_col <- c()
+  for (row in 1:nrow(mort)) {
+    codes <- get_codes(mort[row,], include_underlying=FALSE)
+    num_conditions_col <- append(num_conditions_col, length(codes))
+  }
+
+  mort <- mort %>% add_column(num_conditions=num_conditions_col, .before="underlying")
+  return(mort)
+}
+```
+
+Interestingly, the ICD-10 groups even the underlying conditions into broader categories that may be useful for our analysis. The following is a set of regular expressions that follows the groupings outlined by the ICD-10 groupings relating to pregnancy, childbirth, and the puerperium at https://www.icd10data.com/ICD10CM/Codes/O00-O9A.
+
+```{r}
+code_buckets <- c("O0[0-8]", # pregnancy with abortive outcome
+                  "O09",     # Supervision of high-risk pregnancy
+                  "O1[0-6]", # Edema, proteinuria, and hypertensive
+                  "O2[0-9]", # Other maternal disorders predominantly related to pregnancy
+                  "O[3|4][0-8]|O39",   # Maternal care related to the fetus and amniotic cavity and possible delivery problems
+                  "O[6][0-9]|O7[0-7]", #  Complications of labor and delivery
+                  "O8[0-2]", # Encounter for delivery
+                  "O8[5-9]|O9[0-2]", # Complications predominantly related to the puerperium
+                  "O9[4-9]|O9A" # Other obstetric conditions, not elsewhere classified
+)
+```
+
+```{r}
+group_codes <- function(mort, code) {
+  bucket <- mort[0,]
+  for (row in 1:nrow(mort)) {
+    underlying <- mort[row, "underlying"]
+    if (!is.na(str_extract(underlying, code))) {
+      bucket <- bucket %>% add_row(mort[row,])
+    }
+  }
+
+  return(bucket)
+}
+
+```
+
+```{r}
+abortive <- group_codes(mort_combined, code_buckets[1])
+eph <- group_codes(mort_combined, code_buckets[3])
+preg <- group_codes(mort_combined, code_buckets[4])
+fetal <- group_codes(mort_combined, code_buckets[5])
+comp <- group_codes(mort_combined, code_buckets[6])
+puerperium <- group_codes(mort_combined, code_buckets[8])
+other <- group_codes(mort_combined, code_buckets[9])
+
+buckets = lst(abortive, eph, preg, fetal, comp, puerperium, other)
+```
+
+```{r}
+add_bucket <- function(mort, bucket_name) {
+  mort <- mort %>% add_column(bucket=bucket_name, .before="underlying")
+  return(mort)
+}
+```
+
+```{r}
+mort <- mort_combined[0,]
+abortive <- add_bucket(abortive, "abortive")
+eph <- add_bucket(eph, "eph")
+comp <- add_bucket(comp, "comp")
+preg <- add_bucket(preg, "preg")
+fetal <- add_bucket(fetal, "fetal")
+puerperium <- add_bucket(puerperium, "puerperium")
+other <- add_bucket(other, "other")
+```
+
+```{r}
+mort <- abortive %>%
+  bind_rows(eph, comp, preg, fetal, puerperium, other)
 ```

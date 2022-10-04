@@ -4,5 +4,6 @@
 *.txt
 *.dat
 *.DUSMCPUB
+*.pdf
 VS*
 ueg.py

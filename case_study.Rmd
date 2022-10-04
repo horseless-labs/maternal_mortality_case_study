@@ -254,32 +254,20 @@ mort <- mort %>%
                                 res_status == 4 ~ "foreign resident"))
 ```
 
-We do the same for education. Running this initally returned a very large number of missing values for education, so I want to verify that this occurred in the set that has not modified `education` at all.
+We do the same for education.
 
-```{r}
-edu_missing <- count(mort %>% filter(is.na(education)))
-edu_avail <- count(mort %>% filter(!is.na(education)))
-print(edu_missing)
-print(edu_avail)
-print(edu_missing/nrow(mort)*100)
-```
-
-We see that almost 17% of cases are missing values for education. This was not as high a proportion as I had worried when initially running the following code, but it is still something to examine. This will be visited later.
-
-```{r}
-mort$education <- as.numeric(mort$education)
+```{r, warning=FALSE}
+mort$education_decoded <- as.numeric(mort$education)
 mort <- mort %>%
   filter(!is.na(education)) %>%
-  mutate(education = case_when(education == 00 ~ "No formal education",
-                               education == 1:8 ~ "Elementary school",
-                               education == 9 ~ "1 year of high school",
-                               education == 10 ~ "2 years of high school",
-                               education == 11 ~ "3 years of high school",
-                               education == 12 ~ "4 years of high school",
-                               education == 13 ~ "1 year of college",
-                               education == 14 ~ "2 years of college",
-                               education == 15 ~ "3 years of, college",
-                               education == 16 ~ "4 years of college",
-                               education == 17 ~ "5 or more years of college",
-                               education == 99 ~ "Not stated"))
+  mutate(education_decoded = case_when(education == 1 ~ "8th grade or less",
+                               education == 2 ~ "9th-12th grade, no diploma",
+                               education == 3 ~ "high school graduate or GED completed",
+                               education == 4 ~ "some college credit, but no degree",
+                               education == 5 ~ "associate's degree",
+                               education == 6 ~ "bachelor's degree",
+                               education == 7 ~ "master's degree",
+                               education == 8 ~ "doctorate or professional degree",
+                               education == 9 ~ "unknown")) %>%
+  select(res_status, education, education_decoded, everything())
 ```

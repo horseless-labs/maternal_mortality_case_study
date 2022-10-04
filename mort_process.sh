@@ -37,18 +37,97 @@
 #python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
 #rm x*
 
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2014us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2013us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2012us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2011us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2010us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2009us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2008us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2007us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2006us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2005us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2004us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2003us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2002us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2001us.zip
-wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2000us.zip
+
+# =========================
+
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2014us.zip
+#7z e mort2014us.zip
+split -l 250000 VS14MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2013us.zip
+#7z e mort2013us.zip
+split -l 250000 VS13MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2012us.zip
+#7z e mort2012us.zip
+split -l 250000 VS12MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2011us.zip
+#7z e mort2011us.zip
+split -l 250000 VS11MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2010us.zip
+#7z e mort2010us.zip
+split -l 250000 VS10MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2009us.zip
+#7z e mort2009us.zip
+split -l 250000 VS09MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2008us.zip
+#7z e mort2008us.zip
+split -l 250000 MOrt2008us.dat
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2007us.zip
+#7z e mort2007us.zip
+split -l 250000 VS07MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2006us.zip
+#7z e mort2006us.zip
+split -l 250000 VS06MORT.DUSMCPUB
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2005us.zip
+#7z e mort2005us.zip
+split -l 250000 Mort05uspb.dat
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2004us.zip
+#7z e mort2004us.zip
+split -l 250000 Mort04us.dat
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2003us.zip
+#7z e mort2003us.zip
+split -l 250000 Mort03us.dat
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2002us.zip
+#7z e mort2002us.zip
+split -l 250000 Mort02us.dat
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2001us.zip
+#7z e mort2001us.zip
+split -l 250000 Mort01us.dat
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+
+#wget https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/DVS/mortality/mort2000us.zip
+#7z e mort2000us.zip
+split -l 250000 Mort00us.dat
+python3 mortality_row_parser.py -o "maternal_mortality_2015.csv"
+rm x*
+

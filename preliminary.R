@@ -357,3 +357,7 @@ fetal_race <- ggplot(fetal) +
 
 fetal_hisp <- ggplot(fetal) +
   geom_bar(mapping = aes(x=hisp_orig))
+
+ggplot(new_mort2019) +
+  geom_bar(mapping = aes(x=bucket)) +
+  facet_wrap(~ race)

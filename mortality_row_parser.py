@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-o', type=str, required=True, help="Output filename")
 args = parser.parse_args()
 
-original_fn = "VS20MORT.DUSMCPUB_r20220105"
+#original_fn = "VS20MORT.DUSMCPUB_r20220105"
 split_fn = "xaa"
 files = [f for f in os.listdir() if f.startswith("x")]
 files.sort()

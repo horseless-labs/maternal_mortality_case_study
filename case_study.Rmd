@@ -391,15 +391,42 @@ pop_table <- rename(pop_table, year=names(pop_table)[1])
 ```
 
 ```{r}
-write.table(pop_table, file="demographic_table.csv", sep=",", row.names=FALSE)
-```
-
-```{r}
 library(stringr)
 pop_table$year <- str_extract_all(pop_table$year, "\\d{4}", simplify=TRUE)
 
-pop_table <- pop_table[69:85,]
-pop_table <- rename(pop_table, average_population="Average population[67][29][30]")
-pop_table$year <- as.numeric(pop_table$year)
-pop_table$average_population <- as.numeric(gsub(",","", pop_table$average_population))
+pop_table_tmp <- pop_table[69:85,]
+```
+
+```{r}
+pop_table_tmp <- rename(pop_table_tmp, average_population="Average population[67][29][30]")
+pop_table_tmp <- rename(pop_table_tmp, live_births="Live births[68]")
+pop_table_tmp$year <- as.numeric(pop_table_tmp$year)
+```
+
+```{r}
+avg_pop <- as.numeric(gsub(",","",pop_table_tmp$average_population))
+live_births <- as.numeric(gsub(",","",pop_table_tmp$live_births))
+pop_table_tmp$average_population <- avg_pop
+pop_table_tmp$live_births <- live_births
+```
+
+This will need to be move to the end, after all of the processing of this table has been done.
+```{r}
+write.table(pop_table_tmp, file="demographic_table.csv", sep=",", row.names=FALSE)
+```
+
+```{r}
+pop_table <- pop_table_tmp
+```
+
+```{r}
+ratio <- annual_total$annual_total/pop_table$live_births * 100000
+annual_total$per_100k <- ratio
+ggplot(annual_total, aes(x=year, y=per_100k)) +
+  geom_line(group=1) +
+  geom_point() +
+  ylim(0, 22) +
+  labs(title="Maternal deaths per 100,000 live births, 2003-2019",
+       x="Year",
+       y="Maternal deaths per 100,000 live births")
 ```

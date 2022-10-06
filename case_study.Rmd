@@ -43,7 +43,7 @@ preprocess_dataset <- function(mort, year=0) {
   
   if (year != 0) {
     mort <- mort %>% add_column(year=year, .after="month")
-    mort$year <- as_factor(mort$year)
+    mort$year <- as.numeric(mort$year)
   }
   
   return(mort)
@@ -349,3 +349,23 @@ mort <- mort %>%
                                             hisp_orig_race == 9 ~ "Hispanic origin unknown")) %>%
   relocate(hisp_orig_race_decoded, .after="hisp_orig_race")
 ```
+
+## Entry to the Exploration
+First, we should start looking at some summary statistics to get a sense of where to start.
+
+```{r}
+annual_total <- mort %>%
+  group_by(year) %>%
+  summarise(annual_total = n())
+  
+#annual_total$year <- as.numeric(annual_total$year)
+
+ggplot(annual_total, aes(year, annual_total)) +
+  geom_line(group=1) +
+  geom_point() +
+  ylim(0,900) +
+  labs(title="Total number of annual maternal deaths, 2003-2019",
+       x="Year",
+       y="Annual total")
+```
+

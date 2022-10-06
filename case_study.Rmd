@@ -386,10 +386,20 @@ ind_html <-
   rvest::html_nodes("table.wikitable") %>%
   rvest::html_table(fill = TRUE)
 
-pop_chart <- ind_html[[10]]
-pop_chart <- rename(pop_chart, Year="")
+pop_table <- ind_html[[10]]
+pop_table <- rename(pop_table, year=names(pop_table)[1])
 ```
 
 ```{r}
-write.table(pop_chart, file="demographic_table.csv", sep=",", row.names=FALSE)
+write.table(pop_table, file="demographic_table.csv", sep=",", row.names=FALSE)
+```
+
+```{r}
+library(stringr)
+pop_table$year <- str_extract_all(pop_table$year, "\\d{4}", simplify=TRUE)
+
+pop_table <- pop_table[69:85,]
+pop_table <- rename(pop_table, average_population="Average population[67][29][30]")
+pop_table$year <- as.numeric(pop_table$year)
+pop_table$average_population <- as.numeric(gsub(",","", pop_table$average_population))
 ```

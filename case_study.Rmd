@@ -35,7 +35,7 @@ preprocess_dataset <- function(mort, year=0) {
   mort$death_loc <- as_factor(mort$death_loc)
   mort$marital_status <- as_factor(mort$marital_status)
   mort$race <- as_factor(mort$race)
-  mort$hisp_orig <- as_factor(mort$hisp_orig)
+  #mort$hisp_orig <- as_factor(mort$hisp_orig)
   mort$hisp_orig_race <- as_factor(mort$hisp_orig_race)
   
   mort <- mort %>%
@@ -255,6 +255,23 @@ mort <- mort %>%
   relocate(res_status_decoded, .after="res_status")
 ```
 
+We do the same for place of death.
+
+```{r}
+mort$death_loc_decoded <- as.numeric(mort$death_loc)
+mort <- mort %>%
+  filter(!is.na(death_loc_decoded)) %>%
+  mutate(death_loc_decoded = case_when(death_loc == 1 ~ "Inpatient - hospital, clinic, or medical center",
+                                       death_loc == 2 ~ "Outpatient or admitted to ER - hospital, clinicl, or medical center",
+                                       death_loc == 3 ~ "Dead on arrival - hospital, clinic, or medical center",
+                                       death_loc == 4 ~ "Home",
+                                       death_loc == 5 ~ "Hospice facility",
+                                       death_loc == 6 ~ "Nursing home/long term care",
+                                       death_loc == 7 ~ "Other",
+                                       death_loc == 9 ~ "Place of death unknown")) %>%
+  relocate(death_loc_decoded, .after="death_loc")
+```
+
 We do the same for education.
 
 ```{r, warning=FALSE}
@@ -271,4 +288,64 @@ mort <- mort %>%
                                education == 8 ~ "doctorate or professional degree",
                                education == 9 ~ "unknown")) %>%
   relocate(education_decoded, .after="education")
+```
+
+And for race and Hispanic origins.
+
+```{r}
+mort$race_decoded <- as.character(mort$race)
+mort <- mort %>%
+  filter(!is.na(race_decoded)) %>%
+  mutate(race_decoded = case_when(race == "01" ~ "White",
+                                  race == "02" ~ "Black",
+                                  race == "03" ~ "American Indian (includes Aleuts and Eskimos",
+                                  race == "04" ~ "Chinese",
+                                  race == "05" ~ "Japanese",
+                                  race == "06" ~ "Hawaiian (includes Part-Hawaiian",
+                                  race == "07" ~ "Filipino",
+                                  race == "18" ~ "Asian Indian",
+                                  race == "28" ~ "Korean",
+                                  race == "38" ~ "Samoan",
+                                  race == "48" ~ "Vietnamese",
+                                  race == "58" ~ "Guamanian",
+                                  race == "68" ~ "Other Asian or Pacific Islander",
+                                  race == "78" ~ "Combined other Asian or Pacific Islander")) %>%
+  relocate(race_decoded, .after="race")
+```
+
+```{r}
+mort$hisp_orig_decoded <- mort$hisp_orig
+mort <- mort %>%
+  filter(!is.na(hisp_orig_decoded)) %>%
+  mutate(hisp_orig_decoded = case_when(hisp_orig >= 100 & hisp_orig <= 199 ~ "Non-Hispanic",
+                                       hisp_orig >= 200 & hisp_orig <= 209 ~ "Spaniard",
+                                       hisp_orig >= 210 & hisp_orig <= 219 ~ "Mexican",
+                                       hisp_orig >= 221 & hisp_orig <= 230 ~ "Central American",
+                                       hisp_orig >= 231 & hisp_orig <= 249 ~ "South American",
+                                       hisp_orig >= 250 & hisp_orig <= 259 ~ "Latin American",
+                                       hisp_orig >= 260 & hisp_orig <= 269 ~ "Puerto Rican",
+                                       hisp_orig >= 270 & hisp_orig <= 274 ~ "Cuban",
+                                       hisp_orig >= 275 & hisp_orig <= 279 ~ "Dominican",
+                                       hisp_orig == 220 ~ "Central or South American",
+                                       hisp_orig >= 280 & hisp_orig <= 299 ~ "Other Hispanic",
+                                       hisp_orig >= 996 & hisp_orig <= 999 ~ "Unknown")) %>%
+  relocate(hisp_orig_decoded, .after="hisp_orig")
+```
+
+Finally as a bit of housekeeping, there is a recode that broadly combined Hispanic origin and race that we will handle here.
+
+```{r}
+mort$hisp_orig_race_decoded <- mort$hisp_orig_race
+mort <- mort %>%
+  filter(!is.na(hisp_orig_race_decoded)) %>%
+  mutate(hisp_orig_race_decoded = case_when(hisp_orig_race == 1 ~ "Mexican",
+                                            hisp_orig_race == 2 ~ "Puerto Rican",
+                                            hisp_orig_race == 3 ~ "Cuban",
+                                            hisp_orig_race == 4 ~ "Central or South American",
+                                            hisp_orig_race == 5 ~ "Other or unknown Hispanic",
+                                            hisp_orig_race == 6 ~ "Non-Hispanic White",
+                                            hisp_orig_race == 7 ~ "Non-Hispanic Black",
+                                            hisp_orig_race == 8 ~ "Non-Hispanic Other Races",
+                                            hisp_orig_race == 9 ~ "Hispanic origin unknown")) %>%
+  relocate(hisp_orig_race_decoded, .after="hisp_orig_race")
 ```

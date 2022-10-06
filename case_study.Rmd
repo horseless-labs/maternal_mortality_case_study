@@ -231,8 +231,8 @@ other <- add_bucket(other, "other")
 ```
 
 ```{r}
-mort <- abortive %>%
-  bind_rows(eph, comp, preg, fetal, puerperium, other)
+mort <- mort %>%
+  bind_rows(abortive, eph, comp, preg, fetal, puerperium, other)
 ```
 
 Here we add the number of conditions to the main dataset. The underlying condition is excluded because the codes following it always have a more specific version of that code, so it would be redundant.

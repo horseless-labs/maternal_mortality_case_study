@@ -369,6 +369,9 @@ ggplot(annual_total, aes(year, annual_total)) +
 This only gives us the total number of annual maternal deaths. To determine proportions for ourselves, we m
 
 ```{r}
+# This only needs to be done once
+# TODO: write code that only executes this if the demographic table
+# hasn't already been downlodaed
 library(rvest)
 library(httr)
 library(polite)
@@ -385,4 +388,8 @@ ind_html <-
 
 pop_chart <- ind_html[[10]]
 pop_chart <- rename(pop_chart, Year="")
+```
+
+```{r}
+write.table(pop_chart, file="demographic_table.csv", sep=",", row.names=FALSE)
 ```

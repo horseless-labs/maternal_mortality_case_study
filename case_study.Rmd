@@ -430,17 +430,35 @@ ggplot(annual_total, aes(x=year, y=per_100k)) +
 Determine if the average number of codes assigned to a patient have changed.
 
 ```{r}
-avg_num_conditions <- mort %>%
+avg_num_codes <- mort %>%
   group_by(year) %>%
   summarize(num_patients = n(),
             num_codes = sum(num_conditions),
             avg_codes = num_codes / num_patients)
 
-ggplot(avg_num_conditions, aes(x=year, y=avg_codes)) +
+ggplot(avg_num_codes, aes(x=year, y=avg_codes)) +
          geom_line(group=1) +
          geom_point() +
          ylim(1, 3) +
          labs(title="Average # of codes per patient, 2003-2019",
               x="Year",
               y="Avg. # of codes")
+```
+
+Looking at these two, we notice a sharp increase in both the number of patients and the average number of codes that they present with starting in 2018. My first thought is to drill down and see what codes are common to the last two years that were not common before.
+
+The following pipe generates a tibble that lists the number of occurrences of each code in a given year.
+
+```{r}
+common_codes <- mort %>%
+  group_by(year) %>%
+  add_count(underlying)
+
+common_code_counts <- common_codes %>%
+  group_by(year) %>%
+  select(year, underlying, n) %>%
+  unique() %>%
+  arrange(desc(year))
+
+View(common_code_counts)
 ```

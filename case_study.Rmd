@@ -355,14 +355,14 @@ annual_total <- mort %>%
 ggplot(annual_total, aes(year, annual_total)) +
   geom_line(group=1) +
   geom_point() +
-  ylim(0,900) +
+  ylim(327,900) +
   labs(title="Total number of annual maternal deaths, 2003-2019",
        x="Year",
        y="Annual total")
 ```
 This only gives us the total number of annual maternal deaths. To determine proportions for ourselves, we m
 
-```{r}
+```{r, warning=FALSE}
 # This only needs to be done once
 # TODO: write code that only executes this if the demographic table
 # hasn't already been downlodaed
@@ -405,6 +405,7 @@ pop_table_tmp$live_births <- live_births
 ```
 
 This will need to be move to the end, after all of the processing of this table has been done.
+
 ```{r}
 write.table(pop_table_tmp, file="demographic_table.csv", sep=",", row.names=FALSE)
 ```
@@ -414,12 +415,13 @@ pop_table <- pop_table_tmp
 ```
 
 ```{r}
+annual_total <- annual_total
 ratio <- annual_total$annual_total/pop_table$live_births * 100000
 annual_total$per_100k <- ratio
 ggplot(annual_total, aes(x=year, y=per_100k)) +
   geom_line(group=1) +
   geom_point() +
-  ylim(0, 22) +
+  ylim(10, 25) +
   labs(title="Maternal deaths per 100,000 live births, 2003-2019",
        x="Year",
        y="Maternal deaths per 100,000 live births")

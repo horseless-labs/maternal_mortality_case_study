@@ -476,3 +476,18 @@ underlying_percentage <- mort %>%
 underlying_percentage <- underlying_percentage / nrow(mort) * 100
 underlying_percentage
 ```
+
+While documenting these other conditions, I noticed that the code O95 cannot be found on the main ICD-10 site.
+```{r}
+o95 <- mort %>%
+  select(year, underlying) %>%
+  filter(underlying == "O95") %>%
+  count(year)
+
+ggplot(o95, aes(x=year, y=n)) +
+         geom_line(group=1) + 
+         geom_point() +
+         labs(title="Number of occurrences of O95, 2003-2019",
+              x="Year",
+              y="Number")
+```

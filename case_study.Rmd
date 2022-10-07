@@ -247,7 +247,6 @@ The codes are very densy packed and not especially human readable. Fortunately, 
 ```{r}
 mort$res_status_decoded <- as.numeric(mort$res_status)
 mort <- mort %>%
-  filter(!is.na(res_status_decoded)) %>%
   mutate(res_status_decoded = case_when(res_status == 1 ~ "resident",
                                 res_status == 2 ~ "intrastate nonresident",
                                 res_status == 3 ~ "interstate nonresident",
@@ -260,7 +259,6 @@ We do the same for place of death.
 ```{r}
 mort$death_loc_decoded <- as.numeric(mort$death_loc)
 mort <- mort %>%
-  filter(!is.na(death_loc_decoded)) %>%
   mutate(death_loc_decoded = case_when(death_loc == 1 ~ "Inpatient - hospital, clinic, or medical center",
                                        death_loc == 2 ~ "Outpatient or admitted to ER - hospital, clinicl, or medical center",
                                        death_loc == 3 ~ "Dead on arrival - hospital, clinic, or medical center",
@@ -277,7 +275,6 @@ We do the same for education.
 ```{r, warning=FALSE}
 mort$education_decoded <- as.numeric(mort$education)
 mort <- mort %>%
-  filter(!is.na(education)) %>%
   mutate(education_decoded = case_when(education == 1 ~ "8th grade or less",
                                education == 2 ~ "9th-12th grade, no diploma",
                                education == 3 ~ "high school graduate or GED completed",
@@ -295,7 +292,6 @@ And for race and Hispanic origins.
 ```{r}
 mort$race_decoded <- as.character(mort$race)
 mort <- mort %>%
-  filter(!is.na(race_decoded)) %>%
   mutate(race_decoded = case_when(race == "01" ~ "White",
                                   race == "02" ~ "Black",
                                   race == "03" ~ "American Indian (includes Aleuts and Eskimos",
@@ -316,7 +312,6 @@ mort <- mort %>%
 ```{r}
 mort$hisp_orig_decoded <- mort$hisp_orig
 mort <- mort %>%
-  filter(!is.na(hisp_orig_decoded)) %>%
   mutate(hisp_orig_decoded = case_when(hisp_orig >= 100 & hisp_orig <= 199 ~ "Non-Hispanic",
                                        hisp_orig >= 200 & hisp_orig <= 209 ~ "Spaniard",
                                        hisp_orig >= 210 & hisp_orig <= 219 ~ "Mexican",
@@ -337,7 +332,6 @@ Finally as a bit of housekeeping, there is a recode that broadly combined Hispan
 ```{r}
 mort$hisp_orig_race_decoded <- mort$hisp_orig_race
 mort <- mort %>%
-  filter(!is.na(hisp_orig_race_decoded)) %>%
   mutate(hisp_orig_race_decoded = case_when(hisp_orig_race == 1 ~ "Mexican",
                                             hisp_orig_race == 2 ~ "Puerto Rican",
                                             hisp_orig_race == 3 ~ "Cuban",

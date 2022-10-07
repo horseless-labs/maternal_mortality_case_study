@@ -67,10 +67,10 @@ def parsed_to_string(parsed):
 
 # Checks whether the underlying cause of death is related to maternal mortality
 def check_maternal(line):
-    if line[7].startswith("O") or line[7] == "A34":
+    if line[6].startswith("O") or line[6] == "A34":
         # Codes O96 and O97 are excluded from the original analysis. The reasons are complicated, but
         # essentially maternal mortality after 42 days is counted differently.
-        if line[7].startswith("O96") or line[7].startswith("O97"):
+        if line[6].startswith("O96") or line[7].startswith("O97"):
             return False
         else:
             return True

@@ -426,3 +426,21 @@ ggplot(annual_total, aes(x=year, y=per_100k)) +
        x="Year",
        y="Maternal deaths per 100,000 live births")
 ```
+
+Determine if the average number of codes assigned to a patient have changed.
+
+```{r}
+avg_num_conditions <- mort %>%
+  group_by(year) %>%
+  summarize(num_patients = n(),
+            num_codes = sum(num_conditions),
+            avg_codes = num_codes / num_patients)
+
+ggplot(avg_num_conditions, aes(x=year, y=avg_codes)) +
+         geom_line(group=1) +
+         geom_point() +
+         ylim(1, 3) +
+         labs(title="Average # of codes per patient, 2003-2019",
+              x="Year",
+              y="Avg. # of codes")
+```

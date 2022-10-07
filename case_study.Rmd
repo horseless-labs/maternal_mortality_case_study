@@ -462,4 +462,17 @@ common_code_counts <- common_codes %>%
   arrange(desc(year))
 
 View(common_code_counts)
+# Determine how many codes are responsible for most of the cases
+# (top 5 for each year)
+# and what percentage of cases those were
+unique_underlying <- unique(common_code_counts$underlying)
+
+# We see that the top five conditions from each year are
+# responsible for almost 81% of our data.
+underlying_percentage <- mort %>%
+  select(underlying) %>%
+  filter(underlying %in% unique_underlying) %>%
+  summarise(percentage = n())
+underlying_percentage <- underlying_percentage / nrow(mort) * 100
+underlying_percentage
 ```

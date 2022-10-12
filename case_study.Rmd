@@ -570,6 +570,8 @@ age_groups <- mort %>%
 View(age_groups)
 ```
 
+Add a column for age cohorts, dividing the dataset into periods of five years.
+
 ```{r}
 mort$age_cohort <- mort$age
 mort <- mort %>%
@@ -585,6 +587,8 @@ mort <- mort %>%
                                 age > 55 ~ "55+")) %>%
   relocate(age_cohort, .after="age")
 ```
+
+View cohort size by year.
 
 ```{r}
 cohort_size <- mort %>%
@@ -612,8 +616,8 @@ ggplot(cohort_size_by_year, aes(x=year, y=n)) +
 Get the counts for the top ten codes for each cohort.
 
 ```{r}
-get_cohort_codes <- function(cohort, num=10) {
-  cohort_codes <- mort %>%
+get_cohort_codes <- function(dataset, cohort, num=10) {
+  cohort_codes <- dataset %>%
     filter(age_cohort==cohort) %>%
     select(underlying, age_cohort) %>%
     add_count(underlying) %>%
@@ -632,7 +636,7 @@ cohort_counts <- cohorts[0,]
 cohorts <- pull(cohorts, age_cohort)
 
 for (i in 1:length(cohorts)) {
-  code_counts <- get_cohort_codes(cohorts[i])
+  code_counts <- get_cohort_codes(mort, cohorts[i])
   cohort_counts <- cohort_counts %>%
     bind_rows(code_counts)
 }
@@ -640,8 +644,58 @@ for (i in 1:length(cohorts)) {
 #View(cohort_counts)
 ```
 
+To a rough approximation, we can see that there isn't a pronounced change in the kinds of codes that are responsible for the bulk of maternal mortality in different age groups.
+
 ```{r}
-cohort_counds_charts <- ggplot(cohort_counts, aes(underlying, n)) +
+cohort_counts_charts <- ggplot(cohort_counts, aes(underlying, n)) +
   geom_bar(stat="identity", width=0.5) +
   facet_wrap(~ age_cohort)
+
+View(cohort_counts)
+cohort_counts_charts
+```
+
+We know from earlier in this analysis that there is a jump in the number of codes. The average number of codes per patient was 1.60 in 2017, and that number immediately jumps to 2.97 in 2018. What will be revealed when we partition the dataset into two along those lines?
+
+```{r}
+pre_2018 <- mort %>%
+  filter(year<=2017)
+
+post_2018 <- mort %>%
+  filter(year>=2018)
+
+# 2018 and 2019 account for almost 20% of the codes assigned, even though these two years are less than 12% of the time frame.
+percent_2018 <- (avg_num_codes[16,]$num_codes + avg_num_codes[17,]$num_codes) / sum(avg_num_codes$num_codes) * 100
+print(percent_2018)
+
+View(pre_2018)
+View(post_2018)
+```
+
+```{r}
+cohorts_pre_2018 <- pre_2018 %>%
+  select(age_cohort) %>%
+  unique()
+
+cohorts_post_2018 <- post_2018 %>%
+  select(age_cohort) %>%
+  unique()
+
+cohort_counts_pre_2018 <- cohorts_pre_2018[0,]
+cohort_counts_post_2018 <- cohorts_post_2018[0,]
+
+for (i in 1:length(cohorts)) {
+  code_counts <- get_cohort_codes(pre_2018, cohorts[i])
+  cohort_counts_pre_2018 <- cohort_counts_pre_2018 %>%
+    bind_rows(code_counts)
+}
+
+for (i in 1:length(cohorts)) {
+  code_counts <- get_cohort_codes(post_2018, cohorts[i])
+  cohort_counts_post_2018 <- cohort_counts_post_2018 %>%
+    bind_rows(code_counts)
+}
+
+View(cohort_counts_pre_2018)
+View(cohort_counts_post_2018)
 ```

@@ -579,3 +579,15 @@ mort <- mort %>%
                                 age > 55 ~ "55+")) %>%
   relocate(age_cohort, .after="age")
 ```
+
+```{r}
+cohort_size <- mort %>%
+  group_by(age_cohort) %>%
+  add_count(age_cohort)
+
+cohort_size_by_year <- cohort_size %>%
+  group_by(year) %>%
+  select(year, age_cohort, n) %>%
+  unique() %>%
+  arrange(desc(year))
+```

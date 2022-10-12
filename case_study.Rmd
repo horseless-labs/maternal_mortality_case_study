@@ -478,6 +478,7 @@ underlying_percentage
 ```
 
 While documenting these other conditions, I noticed that the code O95 cannot be found on the main ICD-10 site.
+
 ```{r}
 o95 <- mort %>%
   select(year, underlying,) %>%
@@ -522,10 +523,15 @@ o99 <- get_top_code(1)
 o26 <- get_top_code(2)
 o90 <- get_top_code(3)
 o10 <- get_top_code(4)
+
+top_combined <- bind_rows(o99, o26, o90, o10)
 ```
 
 ```{r}
 ggplot(o99, aes(x=year, y=n)) + geom_line(group=1)
+ggplot(o26, aes(x=year, y=n)) + geom_line(group=1)
+ggplot(o90, aes(x=year, y=n)) + geom_line(group=1)
+ggplot(o10, aes(x=year, y=n)) + geom_line(group=1)
 ```
 
 ```{r}
@@ -593,4 +599,28 @@ cohort_size_by_year <- cohort_size %>%
   arrange(age_cohort)
 
 print(cohort_size_by_year)
+```
+
+Here we see the change in the number of cases of maternal mortality in each cohort. Note steady increases in cohorts especially in 31-40, slight increases in 26-30, and decreases in the 41+ groups.
+
+```{r}
+ggplot(cohort_size_by_year, aes(x=year, y=n)) +
+  geom_line(group=1) +
+  facet_wrap( ~ age_cohort)
+```
+
+```{r}
+get_cohort_codes <- function(cohort, num=10) {
+  cohort_codes <- mort %>%
+    filter(age_cohort==cohort) %>%
+    select(underlying) %>%
+    add_count(underlying) %>%
+    unique() %>%
+    arrange(desc(n)) %>%
+    slice_max(order_by=n, n=num)
+  
+  return(cohort_codes)
+}
+cohort_3135 <- get_cohort_codes("31-35", 10)
+print(cohort_3135)
 ```

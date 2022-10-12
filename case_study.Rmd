@@ -609,11 +609,13 @@ ggplot(cohort_size_by_year, aes(x=year, y=n)) +
   facet_wrap( ~ age_cohort)
 ```
 
+Get the counts for the top ten codes for each cohort.
+
 ```{r}
 get_cohort_codes <- function(cohort, num=10) {
   cohort_codes <- mort %>%
     filter(age_cohort==cohort) %>%
-    select(underlying) %>%
+    select(underlying, age_cohort) %>%
     add_count(underlying) %>%
     unique() %>%
     arrange(desc(n)) %>%
@@ -621,6 +623,25 @@ get_cohort_codes <- function(cohort, num=10) {
   
   return(cohort_codes)
 }
-cohort_3135 <- get_cohort_codes("31-35", 10)
-print(cohort_3135)
+
+cohorts <- mort %>%
+  select(age_cohort) %>%
+  unique()
+
+cohort_counts <- cohorts[0,]
+cohorts <- pull(cohorts, age_cohort)
+
+for (i in 1:length(cohorts)) {
+  code_counts <- get_cohort_codes(cohorts[i])
+  cohort_counts <- cohort_counts %>%
+    bind_rows(code_counts)
+}
+
+#View(cohort_counts)
+```
+
+```{r}
+cohort_counds_charts <- ggplot(cohort_counts, aes(underlying, n)) +
+  geom_bar(stat="identity", width=0.5) +
+  facet_wrap(~ age_cohort)
 ```

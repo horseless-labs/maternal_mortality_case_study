@@ -509,27 +509,73 @@ View(tops)
 
 Pivot back
 ```{r}
-o99 <- tops[1,2:18] %>%
-  pivot_longer(cols=-1) %>%
-  rename(year="name") %>%
-  rename(n="value") %>%
-  select(year, n)
+get_top_code <- function(idx) {
+  o <- tops[idx,2:18] %>%
+    pivot_longer(cols=-1) %>%
+    rename(year="name") %>%
+    rename(n="value") %>%
+    select(year, n)
+  return(o)
+}
 
-o26 <- tops[2,2:18] %>%
-  pivot_longer(cols=-1) %>%
-  rename(year="name") %>%
-  rename(n="value") %>%
-  select(year, n)
+o99 <- get_top_code(1)
+o26 <- get_top_code(2)
+o90 <- get_top_code(3)
+o10 <- get_top_code(4)
+```
 
-o90 <- tops[3,2:18] %>%
-  pivot_longer(cols=-1) %>%
-  rename(year="name") %>%
-  rename(n="value") %>%
-  select(year, n)
+```{r}
+ggplot(o99, aes(x=year, y=n)) + geom_line(group=1)
+```
 
-o10 <- tops[4,2:18] %>%
-  pivot_longer(cols=-1) %>%
-  rename(year="name") %>%
-  rename(n="value") %>%
-  select(year, n)
+```{r}
+o99_main <- mort %>%
+  filter(underlying=="O99") %>%
+  select(code1, code2, code3, code4, code5, code6, code7, code8, code9, code10)
+
+o99_main
+```
+
+```{r}
+common_o99 <- mort %>%
+  group_by(year) %>%
+  add_count(code1)
+
+common_o99_counts <- common_o99 %>%
+  group_by(year) %>%
+  select(year, code1, n) %>%
+  unique() %>%
+  slice_max(order_by = n, n = 15) %>%
+  arrange(desc(year))
+
+View(common_o99_counts)
+```
+
+# Broadening
+Because the codes in the dataset lack a certain specificity, it makes sense at this point to look wider instead of deeper. Next up, we are going to explore age.
+
+```{r}
+age_groups <- mort %>%
+  group_by(year) %>%
+  group_by(age) %>%
+  select(year, age, underlying, everything()) %>%
+  arrange(year, age)
+
+View(age_groups)
+```
+
+```{r}
+mort$age_cohort <- mort$age
+mort <- mort %>%
+  mutate(age_cohort = case_when(age >= 10 & age <= 15 ~ "10-15",
+                                age > 15 & age <= 20 ~ "16-20",
+                                age > 20 & age <= 25 ~ "21-25",
+                                age > 25 & age <= 30 ~ "26-30",
+                                age > 30 & age <= 35 ~ "31-35",
+                                age > 35 & age <= 40 ~ "36-40",
+                                age > 40 & age <= 45 ~ "41-45",
+                                age > 45 & age <= 50 ~ "46-50",
+                                age > 50 & age <= 55 ~ "51-55",
+                                age > 55 ~ "55+")) %>%
+  relocate(age_cohort, .after="age")
 ```

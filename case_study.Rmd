@@ -672,6 +672,8 @@ View(pre_2018)
 View(post_2018)
 ```
 
+Split the dataset on 2018. To see if there is a change in the underlying conditions that are represented.
+
 ```{r}
 cohorts_pre_2018 <- pre_2018 %>%
   select(age_cohort) %>%
@@ -686,16 +688,69 @@ cohort_counts_post_2018 <- cohorts_post_2018[0,]
 
 for (i in 1:length(cohorts)) {
   code_counts <- get_cohort_codes(pre_2018, cohorts[i])
-  cohort_counts_pre_2018 <- cohort_counts_pre_2018 %>%
+  cohort_counts_pre_2018 <- cohort_counts %>%
     bind_rows(code_counts)
 }
 
 for (i in 1:length(cohorts)) {
   code_counts <- get_cohort_codes(post_2018, cohorts[i])
-  cohort_counts_post_2018 <- cohort_counts_post_2018 %>%
+  cohort_counts_post_2018 <- cohort_counts %>%
     bind_rows(code_counts)
 }
 
 View(cohort_counts_pre_2018)
 View(cohort_counts_post_2018)
+```
+
+Here we verify that our standouts are much the same. We might have to narrow down on the secondary codes after all.
+
+```{r}
+ggplot(cohort_counts_pre_2018, aes(underlying, n)) +
+  geom_bar(stat="identity", width=0.5) +
+  facet_wrap(~ age_cohort)
+```
+
+```{r}
+ggplot(cohort_counts_post_2018, aes(underlying, n)) +
+  geom_bar(stat="identity", width=0.5) +
+  facet_wrap(~ age_cohort)
+```
+
+# Additional Codes
+
+As mentioned before, O99, O26, O90, and O10 are our top four codes. It seems that they remain no matter how we break down this dataset, so it behooves us to probe a little farther and see what the additional codes of 2018 and 2019 might be. We will make new tibbles for each of them pre- and post-2018. For the sake of housekeeping, we will also be sure to drop all columns that are completely empty.
+
+```{r}
+pre_year_codes <- function(dataset, divide_year, code) {
+  pre <- dataset %>%
+    filter(year < divide_year) %>%
+    filter(underlying == code) %>%
+    select(code2:code20) %>%
+    select(where(~!all(is.na(.x))))
+}
+  
+post_year_codes <- function(dataset, divide_year, code) {
+  post <- dataset %>%
+    filter(year >= divide_year) %>%
+    filter(underlying == code) %>%
+    select(code2:code20) %>%
+    select(where(~!all(is.na(.x))))
+  
+  return(post)
+}
+
+#o99_pre_2018 <- pre_2018 %>%
+#  select(code1:code20) %>%
+#  select(where(~!all(is.na(.x))))
+o99_pre_2018 <- pre_year_codes(mort, 2018, "O99")
+o99_post_2018 <- post_year_codes(mort, 2018, "O99")
+
+o26_pre_2018 <- pre_year_codes(mort, 2018, "O26")
+o26_post_2018 <- post_year_codes(mort, 2018, "O26")
+
+o90_pre_2018 <- pre_year_codes(mort, 2018, "O90")
+o90_post_2018 <- post_year_codes(mort, 2019, "O90")
+
+o10_pre_2018 <- pre_year_codes(mort, 2018, "O10")
+o10_post_2018 <- post_year_codes(mort, 2018, "O10")
 ```

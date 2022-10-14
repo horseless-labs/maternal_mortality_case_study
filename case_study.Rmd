@@ -739,9 +739,6 @@ post_year_codes <- function(dataset, divide_year, code) {
   return(post)
 }
 
-#o99_pre_2018 <- pre_2018 %>%
-#  select(code1:code20) %>%
-#  select(where(~!all(is.na(.x))))
 o99_pre_2018 <- pre_year_codes(mort, 2018, "O99")
 o99_post_2018 <- post_year_codes(mort, 2018, "O99")
 
@@ -753,4 +750,25 @@ o90_post_2018 <- post_year_codes(mort, 2019, "O90")
 
 o10_pre_2018 <- pre_year_codes(mort, 2018, "O10")
 o10_post_2018 <- post_year_codes(mort, 2018, "O10")
+```
+
+Get vectors of each non-NA code.
+
+```{r}
+library(stringr)
+
+get_secondary_codes <- function(dataset) {
+  code_header <- colnames(dataset)
+  all_non_na <- c()
+  for (i in code_header) {
+    non_na <- dataset[i] %>%
+      drop_na()
+    
+    all_non_na <- append(all_non_na, non_na)
+  }
+  
+  return(all_non_na)
+}
+
+a <- get_secondary_codes(o99_pre_2018)
 ```

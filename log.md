@@ -360,5 +360,12 @@ Taking a step back, what do the top codes post-2018 represent?
 
 **WHAT HAPPENED HERE!?** Just looking at this, it would seem that there was a drastic change in the character of maternal mortality in 2018.
 
+Running out of time for today, but I did a quick search for an overview of data about cardiovascular disease in the us and found this:
+- [What do we know about cardiovascular disease spending and outcomes in the United States?](https://www.healthsystemtracker.org/chart-collection/know-cardiovascular-disease-spending-outcomes-united-states/)
+
+Without going further in-depth, it immediately seems strange that coding for cardiovascular diseases should be coded more frequently in maternal mortality patients when mortality for cardiovascular disease has gone down. A closer look at the codes is necessary; there might be some specific things that are on the rise that got aggregated in the data of the above link.
+
+Additionally, since we're starting to get into the weeds of this, it makes sense to start looking at race and education for these in short order.
+
 # Notes for Later
 Need to go through [Mothers Are Dying From Treatable Mental Health Conditions](https://slate.com/technology/2022/09/mental-health-maternal-mortality.html). A possible consideration for the analysis is mental health conditions that women have while they are pregnant. Pregnancy codes are Z33; might have to sort through mortality data through the various suicides and accidents where Z33 is a secondary condition.

@@ -752,7 +752,7 @@ o10_pre_2018 <- pre_year_codes(mort, 2018, "O10")
 o10_post_2018 <- post_year_codes(mort, 2018, "O10")
 ```
 
-Get vectors of each non-NA code.
+Get vectors of each non-NA code. Because a high degree of specificity is unnecessary for this aggregation, we are only extracting the main body consisting of three characters. That is, a code like "Y839" will simply become "Y83".
 
 ```{r}
 library(stringr)
@@ -760,6 +760,7 @@ library(stringr)
 get_secondary_codes <- function(dataset) {
   code_header <- colnames(dataset)
   all_non_na <- c()
+  
   for (i in code_header) {
     non_na <- dataset[i] %>%
       drop_na()
@@ -771,4 +772,8 @@ get_secondary_codes <- function(dataset) {
 }
 
 a <- get_secondary_codes(o99_pre_2018)
+a <- c(a$code2, a$code3, a$code4, a$code5, a$code6, a$code7)
+a <- str_c(a, sep="")
+a <- as_vector(a)
+a <- str_sub(a, 1, 3)
 ```

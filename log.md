@@ -276,5 +276,43 @@ Next steps:
 ## 2022-10-12
 - Delineate codes before and after 2018 (there is a pronounced jump in codes before and after this year)
 
+## 2022-10-17
+Wrote a mechanism for dividing the set into pre- and post-2018 codes, retrieving the secondary for each, and getting counts for the secondary ones in each of the partitioned sets. That said, looking at [the broadest index for what the codes represent](https://www.icd10data.com/ICD10CM/Codes), I'm wondering if it would make more sense to simply look at the letter of each one.
+
+For patients where O99 was the main cause in the pre-2018 dataset, we see:
+
+```
+# A tibble: 20 × 2
+   codes counts
+   <chr>  <int>
+ 1 O        803
+ 2 T        153
+ 3 X         75
+ 4 R         61
+ 5 Y         44
+ 6 S         13
+ 7 W         12
+ 8 I          9
+ 9 V          8
+10 F          6
+11 Q          4
+12 D          3
+13 C          2
+14 E          2
+15 J          2
+16 N          2
+17 A          1
+18 B          1
+19 G          1
+20 P          1
+```
+
+Some of these codes are more straightforward in their delineation than others.
+- O is what we have been examining thus far.
+- S and T are [injury, poisoning, and certain other consequences of external causes (S00-T88)](https://www.icd10data.com/ICD10CM/Codes/S00-T88). These may need to be parsed more closely.
+- X is broadly exposure to heat, fire, accidents, overexertion, self-harm, and assault. Will also need to be partitioned more carefully. Y and W are much the same. See the [breakdown here](https://www.icd10data.com/ICD10CM/Codes/V00-Y99).
+- R is symptoms, signs, and abnormal clinical and lab findings not elsewhere classified.
+- 
+
 # Notes for Later
 Need to go through [Mothers Are Dying From Treatable Mental Health Conditions](https://slate.com/technology/2022/09/mental-health-maternal-mortality.html). A possible consideration for the analysis is mental health conditions that women have while they are pregnant. Pregnancy codes are Z33; might have to sort through mortality data through the various suicides and accidents where Z33 is a secondary condition.

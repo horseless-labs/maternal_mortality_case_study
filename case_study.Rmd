@@ -801,6 +801,8 @@ o10_secondary_pre <- strip_codes_to_base(d_pre)
 o10_secondary_post <- strip_codes_to_base(d_post)
 ```
 
+These are how code counts would be done for the secondary codes.
+
 ```{r}
 a <- as_tibble(o99_secondary_pre)
 a <- a %>%
@@ -810,4 +812,23 @@ a <- a %>%
   arrange(desc(counts))
 
 a
+```
+
+Looking at that table, I can't help but wonder what the breakdown looks like if we only go by the first letter, i.e. look at [the broadest index for what the codes represent](https://www.icd10data.com/ICD10CM/Codes).
+
+```{r}
+strip_codes_to_char <- function(codes) {
+  stripped <- unlist(codes)
+  stripped <- str_c(stripped, sep="")
+  stripped <- as_vector(stripped)
+  stripped <- str_sub(stripped, 1, 1)
+}
+
+b <- strip_codes_to_char(o99_secondary_pre)
+b <- as_tibble(b)
+b <- b %>%
+  select(codes = 1) %>%
+  group_by(codes) %>%
+  summarise(counts = n()) %>%
+  arrange(desc(counts))
 ```

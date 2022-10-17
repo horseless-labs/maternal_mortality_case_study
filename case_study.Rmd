@@ -850,3 +850,12 @@ o90_secondary_post_counts <- get_secondary_counts(o90_secondary_post)
 o10_secondary_pre_counts <- get_secondary_counts(o10_secondary_pre)
 o10_secondary_post_counts <- get_secondary_counts(o10_secondary_post)
 ```
+
+There is a lot going on here. Let's just look at all secondary codes starting with I, for circulatory system diseases.
+
+```{r}
+cardio <- mort %>%
+  filter(str_detect(code2, "I")) %>%
+  select(code2) %>%
+  arrange()
+```

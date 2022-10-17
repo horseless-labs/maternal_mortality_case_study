@@ -785,16 +785,29 @@ d_post <- get_secondary_codes(o10_post_2018)
 
 ```{r}
 strip_codes_to_base <- function(codes) {
-  stripped <- c()
-  #for (i in 1:length(codes)) {
-  #  stripped <- append(stripped, codes[i])
-  #}
   stripped <- unlist(codes)
-  #print(stripped)
   stripped <- str_c(stripped, sep="")
   stripped <- as_vector(stripped)
   stripped <- str_sub(stripped, 1, 3)
 }
 
-a_stripped <- strip_codes_to_base(a_pre)
+o99_secondary_pre <- strip_codes_to_base(a_pre)
+o99_secondary_post <- strip_codes_to_base(a_post)
+o26_secondary_pre <- strip_codes_to_base(b_pre)
+o26_secondary_post <- strip_codes_to_base(b_post)
+o90_secondary_pre <- strip_codes_to_base(c_pre)
+o90_secondary_post <- strip_codes_to_base(c_post)
+o10_secondary_pre <- strip_codes_to_base(d_pre)
+o10_secondary_post <- strip_codes_to_base(d_post)
+```
+
+```{r}
+a <- as_tibble(o99_secondary_pre)
+a <- a %>%
+  select(codes = 1) %>%
+  group_by(codes) %>%
+  summarise(counts = n()) %>%
+  arrange(desc(counts))
+
+a
 ```

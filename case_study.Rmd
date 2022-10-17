@@ -771,9 +771,30 @@ get_secondary_codes <- function(dataset) {
   return(all_non_na)
 }
 
-a <- get_secondary_codes(o99_pre_2018)
-a <- c(a$code2, a$code3, a$code4, a$code5, a$code6, a$code7)
-a <- str_c(a, sep="")
-a <- as_vector(a)
-a <- str_sub(a, 1, 3)
+# Using this weird pre- and post- construct because R doesn't allow
+# multiple return values :(
+a_pre <- get_secondary_codes(o99_pre_2018)
+a_post <- get_secondary_codes(o99_post_2018)
+b_pre <- get_secondary_codes(o26_pre_2018)
+b_post <- get_secondary_codes(o26_post_2018)
+c_pre <- get_secondary_codes(o90_pre_2018)
+c_post <- get_secondary_codes(o90_post_2018)
+d_pre <- get_secondary_codes(o10_pre_2018)
+d_post <- get_secondary_codes(o10_post_2018)
+```
+
+```{r}
+strip_codes_to_base <- function(codes) {
+  stripped <- c()
+  #for (i in 1:length(codes)) {
+  #  stripped <- append(stripped, codes[i])
+  #}
+  stripped <- unlist(codes)
+  #print(stripped)
+  stripped <- str_c(stripped, sep="")
+  stripped <- as_vector(stripped)
+  stripped <- str_sub(stripped, 1, 3)
+}
+
+a_stripped <- strip_codes_to_base(a_pre)
 ```

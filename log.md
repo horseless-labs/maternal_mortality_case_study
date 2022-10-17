@@ -312,7 +312,53 @@ Some of these codes are more straightforward in their delineation than others.
 - S and T are [injury, poisoning, and certain other consequences of external causes (S00-T88)](https://www.icd10data.com/ICD10CM/Codes/S00-T88). These may need to be parsed more closely.
 - X is broadly exposure to heat, fire, accidents, overexertion, self-harm, and assault. Will also need to be partitioned more carefully. Y and W are much the same. See the [breakdown here](https://www.icd10data.com/ICD10CM/Codes/V00-Y99).
 - R is symptoms, signs, and abnormal clinical and lab findings not elsewhere classified.
-- 
+
+TODO:
+- Clean up variable and function names
+- Go through and try to condense potentially redundant functions. We've looked at secondary functions before, in a way that I don't think was too dissimilar.
+
+Just for the sake of comparison, I decided to look at the post-2018 O99 group and found that the profile of these codes had changed a lot:
+
+```
+# A tibble: 19 × 2
+   codes counts
+   <chr>  <int>
+ 1 I        200
+ 2 C         62
+ 3 J         55
+ 4 F         52
+ 5 G         41
+ 6 A         23
+ 7 E         23
+ 8 D         22
+ 9 O         20
+10 R         18
+11 K         14
+12 Q         14
+13 M         10
+14 T         10
+15 B          8
+16 Y          5
+17 W          4
+18 N          3
+19 X          2
+```
+
+Codes starting with O, T, S, R, Y, X, and W dominated the pre-2018 set. Of those, only O and R are even in the top ten of secondary codes post-2018. At this point, I'm mentally going back and forth with regards to how much these raw counts might matter. Even thinking about it proportionally, the fact that there are so many more codes used that sharply skews things.
+
+At this point, I am wondering if I will need to reference this with either a different health dataset or a larger portion of the one I started with.
+
+Taking a step back, what do the top codes post-2018 represent?
+- I: diseases of the circulatory system
+- C: Neoplasms
+- J: Diseases of the respiratory system (remember that we are currently only looking at pre-COVID data)
+- F: Mental, behavioral, and neurodevelopmental disorders
+- G: diseases of the nervous system
+- A: certain infectious and parasitic diseases
+- E: Endocrine, nutritional, and metabolic diseases
+- D: Diseases of the blood and blood-forming organs (numerical overlap with neoplasms in the coding)
+
+**WHAT HAPPENED HERE!?** Just looking at this, it would seem that there was a drastic change in the character of maternal mortality in 2018.
 
 # Notes for Later
 Need to go through [Mothers Are Dying From Treatable Mental Health Conditions](https://slate.com/technology/2022/09/mental-health-maternal-mortality.html). A possible consideration for the analysis is mental health conditions that women have while they are pregnant. Pregnancy codes are Z33; might have to sort through mortality data through the various suicides and accidents where Z33 is a secondary condition.

@@ -824,17 +824,29 @@ strip_codes_to_char <- function(codes) {
   stripped <- str_sub(stripped, 1, 1)
 }
 
-o99_secondary_pre_counts <- strip_codes_to_char(o99_secondary_pre)
-o99_secondary_pre_counts <- as_tibble(o99_secondary_pre_counts)
-o99_secondary_pre_counts <- o99_secondary_pre_counts %>%
-  select(codes = 1) %>%
-  group_by(codes) %>%
-  summarise(counts = n()) %>%
-  arrange(desc(counts))
+get_secondary_counts <- function(codes) {
+  counts <- strip_codes_to_char(codes)
+  counts <- as_tibble(counts)
+  counts <- counts %>%
+    select(codes = 1) %>%
+    group_by(codes) %>%
+    summarise(counts = n()) %>%
+    arrange(desc(counts))
+  return(counts)
+}
+
+o99_secondary_pre_counts <- get_secondary_counts(o99_secondary_pre)
 ```
 
 Okay, this is an interesting overview of what's happening at the highest level. We should see how this is changing over time for each of the codes.
 
 ```{r}
-
+o99_secondary_pre_counts <- get_secondary_counts(o99_secondary_pre)
+o99_secondary_post_counts <- get_secondary_counts(o99_secondary_post)
+o26_secondary_pre_counts <- get_secondary_counts(o26_secondary_pre)
+o26_secondary_post_counts <- get_secondary_counts(o26_secondary_post)
+o90_secondary_pre_counts <- get_secondary_counts(o90_secondary_pre)
+o90_secondary_post_counts <- get_secondary_counts(o90_secondary_post)
+o10_secondary_pre_counts <- get_secondary_counts(o10_secondary_pre)
+o10_secondary_post_counts <- get_secondary_counts(o10_secondary_post)
 ```

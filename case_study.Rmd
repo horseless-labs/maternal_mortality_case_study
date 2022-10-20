@@ -179,7 +179,6 @@ group_codes <- function(mort, code) {
 
   return(bucket)
 }
-
 ```
 
 The tibble is divided into buckets. It was less obvious before because the codes are opaque to the untrained eye, but here we can see that we have omitted code buckets 2 and 7, representing supervision with high-risk pregnancy and encounter for for delivery, respectively.

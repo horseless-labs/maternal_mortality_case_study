@@ -379,7 +379,7 @@ I might have to clean up some file processing scripts and look at non-maternal d
 > "We don’t know what the effects of pregnancy are on the heart, long-term. That’s one of the goals of the HOPE Registry—to gather that data so we can better counsel women about their risk."
 \- Karen Florio, DO
 
-[Heart Outcomes in Pregnancy Expectations (HOPE) Registry for Mom and Baby](https://www.saintlukeskc.org/hope-registry#)
+**[Heart Outcomes in Pregnancy Expectations (HOPE) Registry for Mom and Baby](https://www.saintlukeskc.org/hope-registry#)**
 - Probably a dead end for this project; unable to find contact info for Karen Florio, and the other members of the registry are just cardiologists.
 
 **[The Potential for Pregnancy Heart Teams to Reduce Maternal Mortality in Women with Cardiovascular Disease](https://www.jacc.org/doi/10.1016/j.jacc.2020.09.007)**
@@ -389,6 +389,93 @@ I might have to clean up some file processing scripts and look at non-maternal d
 - Mentions increasing maternal age as a contributing factor. **Look more closely at this**.
 - 68% of pregnancy-related deaths are caused by cardiovascular and coronary conditions that are preventable.
 > The American College of Obstetrics and Gynecologists (ACOG) Practice Bulletin 212 recommends that all pregnant and postpartum women be assessed using the [California Improving Health Care Response to Cardiovascular Disease in Pregnancy and Postpartum toolkit algorithm](https://www.cmqcc.org/resources-toolkits/toolkits/improving-health-care-response-cardiovascular-disease-pregnancy-and).
+- Postpartum period -> fourth trimester, [Life's Simple 7](https://playbook.heart.org/lifes-simple-7/)
+
+## 2022-1020
+Next steps:
+- Cleaning up R code; move functions to their own scripts, condense them if they are too similar, etc.
+- Rewrite parser to look at mortality outcomes with respect to cardiovascular problems and compare them to the maternal ones.
+- Probe the I codes a bit closer; determine if improved emergency response or other things outside of immediate maternal care could be factors. **Remember that is a bit of location data for where patients died.**
+
+**Notes**
+- If they are about the same, there would be nothing special about maternal mortality being on the rise, and we would then be dealing with a general worsening of health in the US.
+- One of these articles mentioned that the fall of mortality due to cardiovascular incidents was improved emergency response time.
+
+**Breakdown of Post-2018 Secondary Cardiovascular Codes**
+```
+> cardio_post_breakdown
+# A tibble: 35 × 2
+   codes counts
+   <chr>  <int>
+ 1 I26       39
+ 2 I60       22
+ 3 I61       22
+ 4 I11       17
+ 5 I25       16
+ 6 I80       16
+ 7 I42       14
+ 8 I49       13
+ 9 I51       11
+10 I71       11
+```
+- [I26 - Pulmonary embolism](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I26-I28/I26-)
+- [I60 - Nontraumatic subarachnoid hemorrhage](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I60-I69/I60-/I60)
+- [I61 - Nontraumatic intracerebral hemorrhage](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I60-I69/I60-/I60)
+- [I11 - Hypertensive heart disease](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I10-I16/I11-/I11)
+- [I25 - Chronic ischemic heart disease](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I20-I25/I25-/I25)
+- [I80 - Phlebitis and thrombophlebitis](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I80-I89/I80-/I80)
+- [I40 - Cardiomyopathy](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I80-I89/I80-/I80)
+- [I49 - Other cardiac arrhythmias](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I80-I89/I80-/I80)
+- [I51 - Complications and ill-defined descriptions of heart disease](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I80-I89/I80-/I80)
+- [I71 - Aortic aneurysm and dissection](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I80-I89/I80-/I80)
+
+**Breakdown of Pre-2018 Secondary Cardiovascular Codes**
+```
+# A tibble: 20 × 2
+   codes counts
+   <chr>  <int>
+ 1 I46       16
+ 2 I51        4
+ 3 I24        2
+ 4 I27        2
+ 5 I42        2
+ 6 I50        2
+ 7 I70        2
+ 8 I10        1
+ 9 I11        1
+10 I15        1
+```
+Even though this covers the majority of our time range, it is difficult to compare with the post-2018 data because the coding is so much smaller. Still, what are these?
+
+- [I46 - Cardiac arrest](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I30-I5A/I46-/I46). This was a third of this set. Even the 9 instances post-2018 represent an increase in these numbers. However, it is making me think about emergency response.
+
+Taking a look at where this patients with secondary cardiovascular codes tend to die, things have changed there, too. A smaller percentage are dying in inpatient care; more are dying as outpatients, admitted to ER, or at home.
+
+```
+> cardio_pre_locs
+# A tibble: 6 × 3
+  death_loc_decoded                                          locs percent
+  <chr>                                                     <int>   <dbl>
+1 Inpatient - hospital, clinic, or medical center              31   72.1 
+2 Outpatient or admitted to ER - hospital, clinicl, or med…     6   14.0 
+3 Home                                                          2    4.65
+4 Other                                                         2    4.65
+5 Dead on arrival - hospital, clinic, or medical center         1    2.33
+6 Nursing home/long term care                                   1    2.33
+> cardio_post_locs
+# A tibble: 6 × 3
+  death_loc_decoded                                          locs percent
+  <chr>                                                     <int>   <dbl>
+1 Inpatient - hospital, clinic, or medical center             156   58.4 
+2 Outpatient or admitted to ER - hospital, clinicl, or med…    60   22.5 
+3 Home                                                         35   13.1 
+4 Other                                                         9    3.37
+5 Dead on arrival - hospital, clinic, or medical center         4    1.50
+6 Hospice facility                                              3    1.12
+```
+
+Next step:
+- Add the range of all secondary codes instead of just `code2` to see if this changes things.
 
 # Notes for Later
 Need to go through [Mothers Are Dying From Treatable Mental Health Conditions](https://slate.com/technology/2022/09/mental-health-maternal-mortality.html). A possible consideration for the analysis is mental health conditions that women have while they are pregnant. Pregnancy codes are Z33; might have to sort through mortality data through the various suicides and accidents where Z33 is a secondary condition.

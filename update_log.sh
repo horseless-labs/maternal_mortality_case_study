@@ -6,17 +6,4 @@ FILE="/home/mireles/obsidian_notes/horseless/Maternal Mortality Case Study.md"
 DESTINATION="/home/mireles/horseless/maternal_mortality/mortality"
 
 cp "${FILE}" "${DESTINATION}"
-mv 'Maternal Mortality Case Study.md' log.txt
-
-USER="horseless-labs"
-PAT=`head "/home/mireles/Documents/pat.txt"`
-
-expect - <<_END_EXPECT
-	spawn git push -u origin main
-	expect "User*"
-	send "$USER\r"
-	expect "Pass*"
-	send "$PAT\r"
-	set timeout -1
-	expect eof
-_END_EXPECT
+mv 'Maternal Mortality Case Study.md' log.md

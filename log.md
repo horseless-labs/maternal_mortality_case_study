@@ -363,9 +363,32 @@ Taking a step back, what do the top codes post-2018 represent?
 Running out of time for today, but I did a quick search for an overview of data about cardiovascular disease in the us and found this:
 - [What do we know about cardiovascular disease spending and outcomes in the United States?](https://www.healthsystemtracker.org/chart-collection/know-cardiovascular-disease-spending-outcomes-united-states/)
 
-Without going further in-depth, it immediately seems strange that coding for cardiovascular diseases should be coded more frequently in maternal mortality patients when mortality for cardiovascular disease has gone down. A closer look at the codes is necessary; there might be some specific things that are on the rise that got aggregated in the data of the above link.
+Without going further in-depth, it immediately seems strange that coding for cardiovascular diseases should be coded more frequently in maternal mortality patients when mortality for cardiovascular disease has gone down. A closer look at the codes is necessary; there might be some specific things that are on the rise that got aggregated in the data of the above link. ^3eb694
 
 Additionally, since we're starting to get into the weeds of this, it makes sense to start looking at race and education for these in short order.
+
+## 2022-10-19
+Starting by taking a look at this:
+
+![[Maternal Mortality Case Study#^3eb694]]
+
+I might have to clean up some file processing scripts and look at non-maternal data; some of the stuff I'm looking at with respect to cardiovascular issues in maternal mortality is a couple of years behind even my own work.
+
+### Links on Cardiovascular Issues in Maternal Mortality
+**[Getting to the Heart of America's Maternal Mortality Crisis](https://www.healthaffairs.org/doi/10.1377/hlthaff.2021.01702)**
+> "We don’t know what the effects of pregnancy are on the heart, long-term. That’s one of the goals of the HOPE Registry—to gather that data so we can better counsel women about their risk."
+\- Karen Florio, DO
+
+[Heart Outcomes in Pregnancy Expectations (HOPE) Registry for Mom and Baby](https://www.saintlukeskc.org/hope-registry#)
+- Probably a dead end for this project; unable to find contact info for Karen Florio, and the other members of the registry are just cardiologists.
+
+**[The Potential for Pregnancy Heart Teams to Reduce Maternal Mortality in Women with Cardiovascular Disease](https://www.jacc.org/doi/10.1016/j.jacc.2020.09.007)**
+- The intro underreports the maternal mortality rate as far as I've been able to tell.
+- It does mention that cardio issues were >33% of pregnancy-related deaths.
+- Mentions cerebrovascular accidents (stroke, [I60-I69](https://www.icd10data.com/ICD10CM/Codes/I00-I99/I60-I69))
+- Mentions increasing maternal age as a contributing factor. **Look more closely at this**.
+- 68% of pregnancy-related deaths are caused by cardiovascular and coronary conditions that are preventable.
+> The American College of Obstetrics and Gynecologists (ACOG) Practice Bulletin 212 recommends that all pregnant and postpartum women be assessed using the [California Improving Health Care Response to Cardiovascular Disease in Pregnancy and Postpartum toolkit algorithm](https://www.cmqcc.org/resources-toolkits/toolkits/improving-health-care-response-cardiovascular-disease-pregnancy-and).
 
 # Notes for Later
 Need to go through [Mothers Are Dying From Treatable Mental Health Conditions](https://slate.com/technology/2022/09/mental-health-maternal-mortality.html). A possible consideration for the analysis is mental health conditions that women have while they are pregnant. Pregnancy codes are Z33; might have to sort through mortality data through the various suicides and accidents where Z33 is a secondary condition.

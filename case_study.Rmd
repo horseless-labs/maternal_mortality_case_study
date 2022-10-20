@@ -856,6 +856,7 @@ There is a lot going on here. Let's just look at all secondary codes starting wi
 ```{r}
 cardio <- mort %>%
   filter(str_detect(code2, "I")) %>%
-  select(code2) %>%
+  #select(code2) %>%
   arrange()
 ```
+

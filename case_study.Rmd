@@ -10,6 +10,8 @@ date: "2022-10-04"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(root.dir = "/home/mireles/horseless/maternal_mortality/mortality")
+
+source("~/horseless/maternal_mortality/mortality/helper_functions.R")
 ```
 
 Here, we load necessary libraries:
@@ -27,27 +29,7 @@ getwd()
 Because the dataset is loaded as characters, there are columns that need to be converted to other datatypes. Many of these are factors instead of characters. There are also some columns that need to be added for the sake of processing later. Because we are combining many years worth of data, that is a variable to keep track of.
 
 ```{r}
-preprocess_dataset <- function(mort, year=0) {
-  mort$res_status <- as_factor(mort$res_status)
-  mort$education <- as_factor(mort$education)
-  mort$age <- as.numeric(mort$age)
-  mort$month <- as.numeric(mort$month)
-  mort$death_loc <- as_factor(mort$death_loc)
-  mort$marital_status <- as_factor(mort$marital_status)
-  mort$race <- as_factor(mort$race)
-  #mort$hisp_orig <- as_factor(mort$hisp_orig)
-  mort$hisp_orig_race <- as_factor(mort$hisp_orig_race)
-  
-  mort <- mort %>%
-    mutate(age = replace(age, age == 999, NA))
-  
-  if (year != 0) {
-    mort <- mort %>% add_column(year=year, .after="month")
-    mort$year <- as.numeric(mort$year)
-  }
-  
-  return(mort)
-}
+# preprocess_dataset()
 ```
 
 Loading all data, processing it, and combining it into one variable.
@@ -114,42 +96,13 @@ mort_combined <- bind_rows(mort2019, mort2018, mort2017, mort2016,
 There are more housekeeping functions that we need. The following returns a list of all codes associated with a patient, with the option to include the code of the underlying condition.
 
 ```{r}
-get_codes <- function(row, include_underlying=FALSE) {
-  underlying <- which(colnames(row)=="underlying")
-  first_code <- which(colnames(row)=="code1")
-  last_code <- which(colnames(row)=="code20")
-
-  if (include_underlying == TRUE) {
-    codes <- row[c(underlying:last_code)]
-  } else {
-    codes <- row[c(first_code:last_code)]
-  }
-
-  a_codes <- list()
-  for (c in codes) {
-    if (is.na(c)) {
-      return(a_codes)
-    } else {
-      a_codes <- append(a_codes, c)
-    }
-  }
-  return(a_codes)
-}
+# get_codes()
 ```
 
 The following takes a mortality tibble as an argument and returns a version that includes a column with the number of codes associated with the patient, not counting the underlying condition.
 
 ```{r}
-add_num_conditions <- function(mort) {
-  num_conditions_col <- c()
-  for (row in 1:nrow(mort)) {
-    codes <- get_codes(mort[row,], include_underlying=FALSE)
-    num_conditions_col <- append(num_conditions_col, length(codes))
-  }
-
-  mort <- mort %>% add_column(num_conditions=num_conditions_col, .before="underlying")
-  return(mort)
-}
+# add_num_conditions()
 ```
 
 Interestingly, the ICD-10 groups even the underlying conditions into broader categories that may be useful for our analysis. The following is a set of regular expressions that follows the groupings outlined by the ICD-10 groupings relating to pregnancy, childbirth, and the puerperium at https://www.icd10data.com/ICD10CM/Codes/O00-O9A.
@@ -168,17 +121,7 @@ code_buckets <- c("O0[0-8]", # pregnancy with abortive outcome
 ```
 
 ```{r}
-group_codes <- function(mort, code) {
-  bucket <- mort[0,]
-  for (row in 1:nrow(mort)) {
-    underlying <- mort[row, "underlying"]
-    if (!is.na(str_extract(underlying, code))) {
-      bucket <- bucket %>% add_row(mort[row,])
-    }
-  }
-
-  return(bucket)
-}
+# group_codes()
 ```
 
 The tibble is divided into buckets. It was less obvious before because the codes are opaque to the untrained eye, but here we can see that we have omitted code buckets 2 and 7, representing supervision with high-risk pregnancy and encounter for for delivery, respectively.
@@ -210,10 +153,7 @@ head(encounter)
 ```
 
 ```{r}
-add_bucket <- function(mort, bucket_name) {
-  mort <- mort %>% add_column(bucket=bucket_name, .before="underlying")
-  return(mort)
-}
+# add_bucket()
 ```
 
 Here we combine individual buckets back into a single tibble, this time with a column giving each patient the respective broader bucket their underlying condition falls into.
@@ -509,14 +449,7 @@ View(tops)
 
 Pivot back
 ```{r}
-get_top_code <- function(idx) {
-  o <- tops[idx,2:18] %>%
-    pivot_longer(cols=-1) %>%
-    rename(year="name") %>%
-    rename(n="value") %>%
-    select(year, n)
-  return(o)
-}
+# get_top_code()
 
 o99 <- get_top_code(1)
 o26 <- get_top_code(2)
@@ -615,17 +548,7 @@ ggplot(cohort_size_by_year, aes(x=year, y=n)) +
 Get the counts for the top ten codes for each cohort.
 
 ```{r}
-get_cohort_codes <- function(dataset, cohort, num=10) {
-  cohort_codes <- dataset %>%
-    filter(age_cohort==cohort) %>%
-    select(underlying, age_cohort) %>%
-    add_count(underlying) %>%
-    unique() %>%
-    arrange(desc(n)) %>%
-    slice_max(order_by=n, n=num)
-  
-  return(cohort_codes)
-}
+# get_cohort_codes()
 
 cohorts <- mort %>%
   select(age_cohort) %>%
@@ -720,23 +643,9 @@ ggplot(cohort_counts_post_2018, aes(underlying, n)) +
 As mentioned before, O99, O26, O90, and O10 are our top four codes. It seems that they remain no matter how we break down this dataset, so it behooves us to probe a little farther and see what the additional codes of 2018 and 2019 might be. We will make new tibbles for each of them pre- and post-2018. For the sake of housekeeping, we will also be sure to drop all columns that are completely empty.
 
 ```{r}
-pre_year_codes <- function(dataset, divide_year, code) {
-  pre <- dataset %>%
-    filter(year < divide_year) %>%
-    filter(underlying == code) %>%
-    select(code2:code20) %>%
-    select(where(~!all(is.na(.x))))
-}
+# pre_year_codes()
   
-post_year_codes <- function(dataset, divide_year, code) {
-  post <- dataset %>%
-    filter(year >= divide_year) %>%
-    filter(underlying == code) %>%
-    select(code2:code20) %>%
-    select(where(~!all(is.na(.x))))
-  
-  return(post)
-}
+# post_year_codes()
 
 o99_pre_2018 <- pre_year_codes(mort, 2018, "O99")
 o99_post_2018 <- post_year_codes(mort, 2018, "O99")
@@ -756,19 +665,7 @@ Get vectors of each non-NA code. Because a high degree of specificity is unneces
 ```{r}
 library(stringr)
 
-get_secondary_codes <- function(dataset) {
-  code_header <- colnames(dataset)
-  all_non_na <- c()
-  
-  for (i in code_header) {
-    non_na <- dataset[i] %>%
-      drop_na()
-    
-    all_non_na <- append(all_non_na, non_na)
-  }
-  
-  return(all_non_na)
-}
+# get_secondary_codes()
 
 # Using this weird pre- and post- construct because R doesn't allow
 # multiple return values :(
@@ -783,12 +680,7 @@ d_post <- get_secondary_codes(o10_post_2018)
 ```
 
 ```{r}
-strip_codes_to_base <- function(codes) {
-  stripped <- unlist(codes)
-  stripped <- str_c(stripped, sep="")
-  stripped <- as_vector(stripped)
-  stripped <- str_sub(stripped, 1, 3)
-}
+# strip_codes_to_base()
 
 o99_secondary_pre <- strip_codes_to_base(a_pre)
 o99_secondary_post <- strip_codes_to_base(a_post)
@@ -816,23 +708,9 @@ a
 Looking at that table, I can't help but wonder what the breakdown looks like if we only go by the first letter, i.e. look at [the broadest index for what the codes represent](https://www.icd10data.com/ICD10CM/Codes).
 
 ```{r}
-strip_codes_to_char <- function(codes) {
-  stripped <- unlist(codes)
-  stripped <- str_c(stripped, sep="")
-  stripped <- as_vector(stripped)
-  stripped <- str_sub(stripped, 1, 1)
-}
+# strip_codes_to_char()
 
-get_secondary_counts <- function(codes) {
-  counts <- strip_codes_to_char(codes)
-  counts <- as_tibble(counts)
-  counts <- counts %>%
-    select(codes = 1) %>%
-    group_by(codes) %>%
-    summarise(counts = n()) %>%
-    arrange(desc(counts))
-  return(counts)
-}
+# get_secondary_counts()
 
 o99_secondary_pre_counts <- get_secondary_counts(o99_secondary_pre)
 ```

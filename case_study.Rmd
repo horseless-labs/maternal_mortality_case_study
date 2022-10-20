@@ -733,7 +733,51 @@ There is a lot going on here. Let's just look at all secondary codes starting wi
 ```{r}
 cardio <- mort %>%
   filter(str_detect(code2, "I")) %>%
-  #select(code2) %>%
   arrange()
+
+cardio_pre <- cardio %>%
+  filter(year < 2018)
+
+cardio_post <- cardio %>%
+  filter(year >= 2018)
+
+nrow(cardio_pre)
+nrow(cardio_post)
+print(nrow(cardio_post) / (nrow(cardio_pre) + nrow(cardio_post)) * 100)
 ```
 
+More than 86% of secondary codes occur in the last two years, just 12% of the time range we are looking at. How do these break down?
+
+```{r}
+cardio_post_breakdown <- cardio_post %>%
+  select(code2)
+
+cardio_post_breakdown <- get_secondary_codes(cardio_post_breakdown)
+cardio_post_breakdown <- strip_codes_to_base(cardio_post_breakdown)
+cardio_post_breakdown <- as_tibble(cardio_post_breakdown)
+cardio_post_breakdown  <- cardio_post_breakdown %>%
+  select(codes = 1) %>%
+  group_by(codes) %>%
+  summarise(counts = n()) %>%
+  arrange(desc(counts))
+
+cardio_post_breakdown
+```
+
+Let's compare this with the dataset from before 2018.
+
+```{r}
+cardio_pre_breakdown <- cardio_pre %>%
+  select(code2)
+
+cardio_pre_breakdown <- get_secondary_codes(cardio_pre_breakdown)
+cardio_pre_breakdown <- strip_codes_to_base(cardio_pre_breakdown)
+cardio_pre_breakdown <- as_tibble(cardio_pre_breakdown)
+cardio_pre_breakdown  <- cardio_pre_breakdown %>%
+  select(codes = 1) %>%
+  group_by(codes) %>%
+  summarise(counts = n()) %>%
+  arrange(desc(counts))
+
+cardio_pre_breakdown
+```

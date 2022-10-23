@@ -391,7 +391,7 @@ I might have to clean up some file processing scripts and look at non-maternal d
 > The American College of Obstetrics and Gynecologists (ACOG) Practice Bulletin 212 recommends that all pregnant and postpartum women be assessed using the [California Improving Health Care Response to Cardiovascular Disease in Pregnancy and Postpartum toolkit algorithm](https://www.cmqcc.org/resources-toolkits/toolkits/improving-health-care-response-cardiovascular-disease-pregnancy-and).
 - Postpartum period -> fourth trimester, [Life's Simple 7](https://playbook.heart.org/lifes-simple-7/)
 
-## 2022-1020
+## 2022-10-20
 Next steps:
 - Cleaning up R code; move functions to their own scripts, condense them if they are too similar, etc.
 - Rewrite parser to look at mortality outcomes with respect to cardiovascular problems and compare them to the maternal ones.
@@ -476,6 +476,9 @@ Taking a look at where this patients with secondary cardiovascular codes tend to
 
 Next step:
 - Add the range of all secondary codes instead of just `code2` to see if this changes things.
+
+## 2022-10-23
+Quickly added age cohorts. I'm quickly seeing that maternal age is likely a factor, as well.
 
 # Notes for Later
 Need to go through [Mothers Are Dying From Treatable Mental Health Conditions](https://slate.com/technology/2022/09/mental-health-maternal-mortality.html). A possible consideration for the analysis is mental health conditions that women have while they are pregnant. Pregnancy codes are Z33; might have to sort through mortality data through the various suicides and accidents where Z33 is a secondary condition.

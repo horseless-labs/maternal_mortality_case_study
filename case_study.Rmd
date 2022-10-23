@@ -785,33 +785,15 @@ cardio_pre_breakdown
 The question has been raised as to whether some of the changes might be due to emergency response, so let's take a look at that.
 
 ```{r}
-cardio_pre_locs <- cardio_pre %>%
-  group_by(death_loc_decoded) %>%
-  summarise(locs = n(),
-            percent = n() / nrow(cardio_pre) * 100) %>%
-  arrange(desc(percent))
-
-cardio_post_locs <- cardio_post %>%
-  group_by(death_loc_decoded) %>%
-  summarise(locs = n(),
-            percent = n() / nrow(cardio_post) * 100) %>%
-  arrange(desc(percent))
+cardio_pre_locs <- group_percents(cardio_pre, death_loc_decoded)
+cardio_post_locs <- group_percents(cardio_post, death_loc_decoded)
 ```
 
 Looking at race.
 
 ```{r}
-cardio_pre_race <- cardio_pre %>%
-  group_by(race_decoded) %>%
-  summarise(count = n(),
-            percent = n() / nrow(cardio_pre) * 100) %>%
-  arrange(desc(percent))
-
-cardio_post_race <- cardio_post %>%
-  group_by(race_decoded) %>%
-  summarise(count = n(),
-            percent = n() / nrow(cardio_post) * 100) %>%
-  arrange(desc(percent))
+cardio_pre_race <- group_percents(cardio_pre, race_decoded)
+cardio_post_race <- group_percents(cardio_post, race_decoded)
 ```
 
 Many fewer races are represented in the pre-2018 data; making sure that there isn't something odd about the data by looking at all pre-2018 races.
@@ -823,4 +805,9 @@ races <- mort %>%
   summarise(count = n(),
             percent = n() / nrow(mort) * 100) %>%
   arrange(desc(percent))
+```
+
+```{r}
+cardio_pre_age <- group_percents(cardio_pre, age_cohort)
+cardio_post_age <- group_percents(cardio_post, age_cohort)
 ```

@@ -148,3 +148,14 @@ get_secondary_counts <- function(codes) {
   return(counts)
 }
 
+# Returns a single column from a mortality tibble
+# Adds variables for total counts and proportions for each of the
+# groups within that column.
+group_percents <- function(df, var) {
+  df <- df %>%
+    group_by({{var}}) %>%
+    summarise(count = n(),
+              percent = n() / nrow(df) * 100) %>%
+    arrange(desc(percent))
+  return(df)
+}

@@ -14,6 +14,8 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', type=str, required=True, help="Output filename")
+parser.add_argument('-c', type=str, required=False, nargs='?', const='O',
+                    help="Indicates a blanket of codes to output; default O for pregnancy-related conditions")
 args = parser.parse_args()
 
 #original_fn = "VS20MORT.DUSMCPUB_r20220105"
@@ -77,6 +79,14 @@ def check_maternal(line):
     else:
         return False
 
+def check_any_cause(line):
+    cause = args.c
+
+    if line[6].startswith(cause):
+        return True
+    else:
+        return False
+
 header = "res_status,education,month,age,death_loc,marital_status,underlying,code1,code2,code3,code4,code5,code6,code7,code8,code9,code10,code11,code12,code13,code14,code15,code16,code17,code18,code19,code20,race,hisp_orig,hisp_orig_race,occupation_code,industry_code\n"
 
 test = parse(lines[0])
@@ -105,11 +115,16 @@ if __name__ == '__main__':
         lines = line.split("\n")
         del lines[-1]
 
-        with open(args.o, 'a') as mm:
+        with open(args.o, 'a') as mort_file:
             if fn == "xaa":
-                mm.write(header)
+                mort_file.write(header)
             for i in range(len(lines)):
                 row = parse(lines[i])
-                if check_maternal(row) == True:
-                    row = parsed_to_string(row)
-                    mm.write(row + '\n')
+                if args.c is None:
+                    if check_maternal(row) == True:
+                        row = parsed_to_string(row)
+                        mort_file.write(row + '\n')
+                else:
+                    if check_any_cause(row) == True:
+                        row = parsed_to_string(row)
+                        mort_file.write(row + '\n')

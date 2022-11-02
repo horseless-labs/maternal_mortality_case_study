@@ -841,9 +841,17 @@ cardio_post <- cardio_post_age %>%
 merged_cardio <- tibble(age_cohort = cardio_pre$age_cohort,
                         pre_2018 = cardio_pre$pre_count,
                         post_2018 = cardio_post$post_count)
+
 merged_cardio <- merged_cardio %>%
   pivot_longer(-age_cohort, names_to = "variable", values_to = "count")
   
 ggplot() +
   geom_bar(data = merged_cardio, aes(x=age_cohort, y=count, fill=variable), stat="identity", width=0.5, position="dodge")
+```
+
+At this point, it might be worth looking at the range of cardiac mortality data as a reference. If there is, broadly, a large incidence of this kind of mortality that tracks this distribution, then this portion of the analysis could be closed.
+
+```{r}
+cardiac2019 <- read_csv("cardio_mortality_2019.csv")
+cardiac2019 <- preprocess_dataset(cardiac2019, 2019)
 ```

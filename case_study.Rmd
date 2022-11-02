@@ -822,3 +822,28 @@ ggplot() +
 cardio_pre_age
 cardio_post_age
 ```
+
+Because of the increasing maternal age in cardiac cases, it might be tempting to conclude that the culprit here is advancing maternal age; a larger percentage of the recent group are older, and that cohort has moved down to 4th place. However, it is worth noting that even the raw counts for the ages are increasing. For instance, the **entire** pre-2018 group for the 21-25 cohort has fewer cases than the same cohort from just 2018 and 2019.
+
+```{r}
+cardio_pre <- cardio_pre_age %>%
+  arrange(age_cohort) %>%
+  select(age_cohort, count) %>%
+  rename(pre_count = count)
+
+cardio_post <- cardio_post_age %>%
+  arrange(age_cohort) %>%
+  select(age_cohort, count) %>%
+  rename(post_count  = count) %>%
+  add_row(age_cohort = "46-50", post_count=0) %>%
+  add_row(age_cohort = "51-55", post_count=0)
+
+merged_cardio <- tibble(age_cohort = cardio_pre$age_cohort,
+                        pre_2018 = cardio_pre$pre_count,
+                        post_2018 = cardio_post$post_count)
+merged_cardio <- merged_cardio %>%
+  pivot_longer(-age_cohort, names_to = "variable", values_to = "count")
+  
+ggplot() +
+  geom_bar(data = merged_cardio, aes(x=age_cohort, y=count, fill=variable), stat="identity", width=0.5, position="dodge")
+```

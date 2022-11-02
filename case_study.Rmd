@@ -400,7 +400,7 @@ common_code_counts <- common_codes %>%
   slice_max(order_by = n, n = 5) %>%
   arrange(desc(year))
 
-View(common_code_counts)
+#View(common_code_counts)
 # Determine how many codes are responsible for most of the cases
 # (top 5 for each year)
 # and what percentage of cases those were
@@ -444,7 +444,7 @@ tops <- tops %>%
          `2008`, `2009`, `2010`, `2011`, `2012`, `2013`, `2014`,
          `2015`, `2016`, `2017`, `2018`, `2019`) %>%
   replace(is.na(.), 0)
-View(tops)
+#View(tops)
 ```
 
 Pivot back
@@ -486,7 +486,7 @@ common_o99_counts <- common_o99 %>%
   slice_max(order_by = n, n = 15) %>%
   arrange(desc(year))
 
-View(common_o99_counts)
+#View(common_o99_counts)
 ```
 
 # Broadening
@@ -499,7 +499,7 @@ age_groups <- mort %>%
   select(year, age, underlying, everything()) %>%
   arrange(year, age)
 
-View(age_groups)
+#View(age_groups)
 ```
 
 Add a column for age cohorts, dividing the dataset into periods of five years.
@@ -573,7 +573,7 @@ cohort_counts_charts <- ggplot(cohort_counts, aes(underlying, n)) +
   geom_bar(stat="identity", width=0.5) +
   facet_wrap(~ age_cohort)
 
-View(cohort_counts)
+#View(cohort_counts)
 cohort_counts_charts
 ```
 
@@ -590,8 +590,8 @@ post_2018 <- mort %>%
 percent_2018 <- (avg_num_codes[16,]$num_codes + avg_num_codes[17,]$num_codes) / sum(avg_num_codes$num_codes) * 100
 print(percent_2018)
 
-View(pre_2018)
-View(post_2018)
+#View(pre_2018)
+#View(post_2018)
 ```
 
 Split the dataset on 2018. To see if there is a change in the underlying conditions that are represented.
@@ -620,8 +620,8 @@ for (i in 1:length(cohorts)) {
     bind_rows(code_counts)
 }
 
-View(cohort_counts_pre_2018)
-View(cohort_counts_post_2018)
+#View(cohort_counts_pre_2018)
+#View(cohort_counts_post_2018)
 ```
 
 Here we verify that our standouts are much the same. We might have to narrow down on the secondary codes after all.
@@ -796,7 +796,7 @@ cardio_pre_race <- group_percents(cardio_pre, race_decoded)
 cardio_post_race <- group_percents(cardio_post, race_decoded)
 ```
 
-Many fewer races are represented in the pre-2018 data; making sure that there isn't something odd about the data by looking at all pre-2018 races.
+Many fewer races are represented in the pre-2018 data; to confirm that there isn't something odd about the data by looking at all pre-2018 races, we run the following code.
 
 ```{r}
 races <- mort %>%
@@ -807,7 +807,18 @@ races <- mort %>%
   arrange(desc(percent))
 ```
 
+Let's take a look at how mortality has changed with maternal age before and after 2018.
+
 ```{r}
 cardio_pre_age <- group_percents(cardio_pre, age_cohort)
 cardio_post_age <- group_percents(cardio_post, age_cohort)
+
+ggplot() +
+  geom_bar(data = cardio_pre_age, aes(age_cohort, percent), color="blue", stat="identity", width=0.5, fill="blue")
+
+ggplot() +
+  geom_bar(data = cardio_post_age, aes(age_cohort, percent), color="red", stat="identity", width=0.5, fill="red")
+
+cardio_pre_age
+cardio_post_age
 ```

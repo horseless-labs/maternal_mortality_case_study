@@ -159,3 +159,10 @@ group_percents <- function(df, var) {
     arrange(desc(percent))
   return(df)
 }
+
+parse_macrotrends <- function(mmr) {
+  mmr <- as_tibble(mmr[13:27,]) %>%
+    separate("Macrotrends Data Download", c("year", "month", "day", "per_100k", "change")) %>%
+    select(year, per_100k)
+  return(mmr)
+}

@@ -1,0 +1,677 @@
+---
+title: "Initial Report on Maternal Mortality in the United States"
+author: "Marco Mireles"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(root.dir = "/home/mireles/horseless/maternal_mortality/mortality")
+source("~/horseless/maternal_mortality/mortality/helper_functions.R")
+```
+
+## Introduction
+The impetus for this case study was an article from the Guardian reporting that [US maternal deaths rose in 2020, with Black mothers at far higher risk](https://www.theguardian.com/us-news/2022/feb/23/us-maternal-deaths-mortality-black-mothers-covid). This inspired me to do a more detailed examination of the data. Having looked at statistics comparing US and western European populations before, I have noticed that the broad statistics sometimes look different for the US as a whole than when it is divided into subpopulations. For instance, the birth rate among White middle-class Americans more closely tracks their European counterparts than would be expected. Thus, it is possible that recommendations for changes to fix any given problem might be specific to these subpopulations.
+
+## Initial Questions to Investigate
+Keeping the above in mind, these were some of the starting points that this case study was meant to investigate:
+
+- Does the White middle-class population have a maternal mortality rate much different from their western European counterparts?
+- In examining socioeconomic indicators, will e.g. Whites and Blacks of similar such status have similar maternal mortality rates?
+- Could other demographic changes be responsible for the increase in maternal mortality in general?
+
+## Loading the Data
+The primary source for data regarding maternal mortality is from the National Center for Health Statistic's Division of Vital Statistics, the public-facing portal for which can be found [here](https://www.cdc.gov/nchs/data_access/VitalStatsOnline.htm). After some initial confusion about the reporting, I determined that this case study would use files found under the heading Mortality Multiple Cause Files. These files are not specific to maternal mortality; they contain all causes of mortality in the US. Each death is assigned an ICD-10 code for a condition that was described as being the underlying cause of death, and up to 20 additional ICD-10 conditions that the patient also presented with.
+
+The task of cleaning and validating the extraneous data fell to a custom Python script that will be linked in the resources of this case study. Broadly, the method of separating instances of maternal mortality was a matter of extracting ICD-10 code numbers A34, O00-O95, and O98-O99 from the underlying causes column and saving them to CSV files for their respective years, per the above CDC page.
+
+Those files are loaded and processed below. Refer to the helper_function.R script linked in the resources section for more specific explanations of how these functions work.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(rvest)
+library(httr)
+library(polite)
+```
+
+```{r}
+getwd()
+```
+
+```{r message=FALSE, warning=FALSE}
+mort2019 <- read_csv("maternal_mortality_2019.csv")
+mort2019 <- preprocess_dataset(mort2019, 2019)
+
+mort2018 <- read_csv("maternal_mortality_2018.csv")
+mort2018 <- preprocess_dataset(mort2018, 2018)
+
+mort2017 <- read_csv("maternal_mortality_2017.csv")
+mort2017 <- preprocess_dataset(mort2017, 2017)
+
+mort2016 <- read_csv("maternal_mortality_2016.csv")
+mort2016 <- preprocess_dataset(mort2016, 2016)
+
+mort2015 <- read_csv("maternal_mortality_2015.csv")
+mort2015 <- preprocess_dataset(mort2015, 2015)
+
+mort2014 <- read_csv("maternal_mortality_2014.csv")
+mort2014 <- preprocess_dataset(mort2014, 2014)
+
+mort2013 <- read_csv("maternal_mortality_2013.csv")
+mort2013 <- preprocess_dataset(mort2013, 2013)
+
+mort2012 <- read_csv("maternal_mortality_2012.csv")
+mort2012 <- preprocess_dataset(mort2012, 2012)
+
+mort2011 <- read_csv("maternal_mortality_2011.csv")
+mort2011 <- preprocess_dataset(mort2011, 2011)
+
+mort2010 <- read_csv("maternal_mortality_2010.csv")
+mort2010 <- preprocess_dataset(mort2010, 2010)
+
+mort2009 <- read_csv("maternal_mortality_2009.csv")
+mort2009 <- preprocess_dataset(mort2009, 2009)
+
+mort2008 <- read_csv("maternal_mortality_2008.csv")
+mort2008 <- preprocess_dataset(mort2008, 2008)
+
+mort2007 <- read_csv("maternal_mortality_2007.csv")
+mort2007 <- preprocess_dataset(mort2007, 2007)
+
+mort2006 <- read_csv("maternal_mortality_2006.csv")
+mort2006 <- preprocess_dataset(mort2006, 2006)
+
+mort2005 <- read_csv("maternal_mortality_2005.csv")
+mort2005 <- preprocess_dataset(mort2005, 2005)
+
+mort2004 <- read_csv("maternal_mortality_2004.csv")
+mort2004 <- preprocess_dataset(mort2004, 2004)
+
+mort2003 <- read_csv("maternal_mortality_2003.csv")
+mort2003 <- preprocess_dataset(mort2003, 2003)
+
+mort_combined <- bind_rows(mort2019, mort2018, mort2017, mort2016,
+                          mort2015, mort2014, mort2013, mort2012,
+                          mort2011, mort2010, mort2009, mort2008,
+                          mort2007, mort2006, mort2005, mort2004,
+                          mort2003)
+```
+
+The thorough reviewer will have noticed that the time frame of the data set begins in 2003 despite the Vital Statistics portal supplying data as far back as 1968, and ends in 2019 despite the availability of data from 2020 and 2021. Examining the given formatting protocol provided by the [User's Guide](https://www.cdc.gov/nchs/nvss/mortality_public_use_data.htm), there were revisions to the coding for race and Hispanic origin in 2003 that would require additional modifications to the Python script to parse. As for ending in 2019, the COVID-19 pandemic represents a potentially substantial confounding in maternal care that is both ongoing and poorly understood. This narrows our range to a period of 17 years, enough to establish appreciable trends and still be relevant to contemporary maternal care.
+
+
+In addition to collating each year into a single dataframe and ensuring that the columns are in the right format, it will be a benefit to make a few new columns that will make things more legible to the untrained eye. A good place to start is partitioning the underlying conditions into broad categories. Using [Pregnancy, childbirth, and the puerperium O00-O9A](https://www.icd10data.com/ICD10CM/Codes/O00-O9A), we mirror the divisions in our own dataframe:
+
+- [O00-O08: Pregnancy with abortive outcomes](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O00-O08)
+- [O09-O09: Supervision of high-risk pregnancy](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O09-O09)
+- [O10-O16: Edema, proteinuria, and hypertensive disorders](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O10-O16)
+- [O20-O29: Other maternal disorders predominantly related to pregnancy](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O20-O29)
+- [O30-O48: Maternal care related to the fetus and amniotic cavity and possible delivery problems](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O30-O48)
+- [O60-O77: Complications of labor and delivery](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O60-O77)
+- [O80-O92: Encounter for delivery](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O80-O82)
+- [O85-O92: Complications predominantly related to the peirperium](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O85-O92)
+- [O94-O9A: Other obstetric conditions, not elsewhere classified](https://www.icd10data.com/ICD10CM/Codes/O00-O9A/O94-O9A)
+
+```{r}
+condition_buckets <- c("O0[0-8]", # pregnancy with abortive outcome
+                  "O09",     # Supervision of high-risk pregnancy
+                  "O1[0-6]", # Edema, proteinuria, and hypertensive
+                  "O2[0-9]", # Other maternal disorders predominantly related to pregnancy
+                  "O[3|4][0-8]|O39",   # Maternal care related to the fetus and amniotic cavity and possible delivery problems
+                  "O[6][0-9]|O7[0-7]", #  Complications of labor and delivery
+                  "O8[0-2]", # Encounter for delivery
+                  "O8[5-9]|O9[0-2]", # Complications predominantly related to the puerperium
+                  "O9[4-9]|O9A" # Other obstetric conditions, not elsewhere classified
+)
+                  
+abortive <- group_codes(mort_combined, condition_buckets[1])
+eph <- group_codes(mort_combined, condition_buckets[3])
+preg <- group_codes(mort_combined, condition_buckets[4])
+fetal <- group_codes(mort_combined, condition_buckets[5])
+comp <- group_codes(mort_combined, condition_buckets[6])
+puerperium <- group_codes(mort_combined, condition_buckets[8])
+other <- group_codes(mort_combined, condition_buckets[9])
+```
+
+Taking a a quick look at the buckets with View(), I noticed that the encounter group encouragingly has 0 values going back to 2015. I also noticed that the high-risk group confusingly also has 0 values, which seems incredibly unlikely. After suspecting a bug in my own regex code, I searched and found a helpful page from [Outsource Strategies International](https://www.outsourcestrategies.com/resources/high-risk-pregnancy-icd-10-coding-changes-2017/) explaining that O09 is only intended for use in the prenatal period, and that encounter codes are meant  specifically for situations where there were no complications during the labor or delivery episode, not where a mortality event occurred unexpectedly. The two can be excluded.
+
+Next, we combine all of these back into one dataframe, which now includes a brief descriptor for the underlying condition.
+
+```{r}
+mort <- mort_combined[0,]
+abortive <- add_bucket(abortive, "Abortive")
+eph <- add_bucket(eph, "Edema, proteinuria, and hypertensive")
+comp <- add_bucket(comp, "Complications of labor and delivery")
+preg <- add_bucket(preg, "Other maternal disorders related to pregnancy")
+fetal <- add_bucket(fetal, "Fetal")
+puerperium <- add_bucket(puerperium, "Puerperium")
+other <- add_bucket(other, "Other obstetric conditions")
+
+mort <- mort %>%
+  bind_rows(abortive, eph, comp, preg, fetal, puerperium, other) %>%
+  relocate(bucket, .after="marital_status")
+```
+
+At this point, making a more legibile dataframe no longer needs extra data sorting and processing. It is simply a matter of decoding currently available codes in accordance with the user's guide. We start with resident status. Note that this is not to do with the patient's immigration status, but is more a matter of residence in the same state and/or county as treatment.
+
+```{r}
+mort$res_status_decoded <- as.numeric(mort$res_status)
+mort <- mort %>%
+  mutate(res_status_decoded = case_when(res_status == 1 ~ "resident",
+                                res_status == 2 ~ "intrastate nonresident",
+                                res_status == 3 ~ "interstate nonresident",
+                                res_status == 4 ~ "foreign resident")) %>%
+  relocate(res_status_decoded, .after="res_status")
+```
+
+We do the same for place of death.
+
+```{r}
+mort$death_loc_decoded <- as.numeric(mort$death_loc)
+mort <- mort %>%
+  mutate(death_loc_decoded = case_when(death_loc == 1 ~ "Inpatient - hospital, clinic, or medical center",
+                                       death_loc == 2 ~ "Outpatient or admitted to ER - hospital, clinical, or medical center",
+                                       death_loc == 3 ~ "Dead on arrival - hospital, clinic, or medical center",
+                                       death_loc == 4 ~ "Home",
+                                       death_loc == 5 ~ "Hospice facility",
+                                       death_loc == 6 ~ "Nursing home/long term care",
+                                       death_loc == 7 ~ "Other",
+                                       death_loc == 9 ~ "Place of death unknown")) %>%
+  relocate(death_loc_decoded, .after="death_loc")
+```
+
+Then education.
+
+```{r, warning=FALSE}
+mort$education_decoded <- as.numeric(mort$education)
+mort <- mort %>%
+  mutate(education_decoded = case_when(education == 1 ~ "8th grade or less",
+                               education == 2 ~ "9th-12th grade, no diploma",
+                               education == 3 ~ "high school graduate or GED completed",
+                               education == 4 ~ "some college credit, but no degree",
+                               education == 5 ~ "associate's degree",
+                               education == 6 ~ "bachelor's degree",
+                               education == 7 ~ "master's degree",
+                               education == 8 ~ "doctorate or professional degree",
+                               education == 9 ~ "unknown")) %>%
+  relocate(education_decoded, .after="education")
+```
+
+And finally for race and Hispanic origin. That there are three here might be a bit confusing, but please note that the last one decodes a recoding in the original data set that is included here for housekeeping purposes.
+
+```{r}
+mort$race_decoded <- as.character(mort$race)
+mort <- mort %>%
+  mutate(race_decoded = case_when(race == "01" ~ "White",
+                                  race == "02" ~ "Black",
+                                  race == "03" ~ "American Indian (includes Aleuts and Eskimos",
+                                  race == "04" ~ "Chinese",
+                                  race == "05" ~ "Japanese",
+                                  race == "06" ~ "Hawaiian (includes Part-Hawaiian",
+                                  race == "07" ~ "Filipino",
+                                  race == "18" ~ "Asian Indian",
+                                  race == "28" ~ "Korean",
+                                  race == "38" ~ "Samoan",
+                                  race == "48" ~ "Vietnamese",
+                                  race == "58" ~ "Guamanian",
+                                  race == "68" ~ "Other Asian or Pacific Islander",
+                                  race == "78" ~ "Combined other Asian or Pacific Islander")) %>%
+  relocate(race_decoded, .after="race")
+
+mort$hisp_orig_decoded <- mort$hisp_orig
+mort <- mort %>%
+  mutate(hisp_orig_decoded = case_when(hisp_orig >= 100 & hisp_orig <= 199 ~ "Non-Hispanic",
+                                       hisp_orig >= 200 & hisp_orig <= 209 ~ "Spaniard",
+                                       hisp_orig >= 210 & hisp_orig <= 219 ~ "Mexican",
+                                       hisp_orig >= 221 & hisp_orig <= 230 ~ "Central American",
+                                       hisp_orig >= 231 & hisp_orig <= 249 ~ "South American",
+                                       hisp_orig >= 250 & hisp_orig <= 259 ~ "Latin American",
+                                       hisp_orig >= 260 & hisp_orig <= 269 ~ "Puerto Rican",
+                                       hisp_orig >= 270 & hisp_orig <= 274 ~ "Cuban",
+                                       hisp_orig >= 275 & hisp_orig <= 279 ~ "Dominican",
+                                       hisp_orig == 220 ~ "Central or South American",
+                                       hisp_orig >= 280 & hisp_orig <= 299 ~ "Other Hispanic",
+                                       hisp_orig >= 996 & hisp_orig <= 999 ~ "Unknown")) %>%
+  relocate(hisp_orig_decoded, .after="hisp_orig")
+
+mort$hisp_orig_race_decoded <- mort$hisp_orig_race
+mort <- mort %>%
+  mutate(hisp_orig_race_decoded = case_when(hisp_orig_race == 1 ~ "Mexican",
+                                            hisp_orig_race == 2 ~ "Puerto Rican",
+                                            hisp_orig_race == 3 ~ "Cuban",
+                                            hisp_orig_race == 4 ~ "Central or South American",
+                                            hisp_orig_race == 5 ~ "Other or unknown Hispanic",
+                                            hisp_orig_race == 6 ~ "Non-Hispanic White",
+                                            hisp_orig_race == 7 ~ "Non-Hispanic Black",
+                                            hisp_orig_race == 8 ~ "Non-Hispanic Other Races",
+                                            hisp_orig_race == 9 ~ "Hispanic origin unknown")) %>%
+  relocate(hisp_orig_race_decoded, .after="hisp_orig_race")
+```
+
+What does our dataframe actually look like?
+
+```{r}
+mort
+```
+
+## Start of the Exploration
+First, we can start looking at some summary statistics to get a sense of where to start.
+
+```{r}
+annual_total <- mort %>%
+  group_by(year) %>%
+  summarise(annual_total = n())
+  
+ggplot(annual_total, aes(year, annual_total)) +
+  geom_line(group=1) +
+  geom_point() +
+  ylim(327,900) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Total number of annual maternal deaths, 2003-2019",
+       x="Year",
+       y="Annual total")
+```
+
+This gives us the total number of maternal mortality cases per year, but getting proportions will be much more valuable. To do that, we need to download some additional data. For our purposes, we are interested in the number of maternal mortality cases per 100,000 live births. Fortunately, Wikipedia has well-sourced US demographic data that will help us get to just that figure. Here, we look at some code that will help us politely (i.e. scraping without causing undue load to the server) download those statistics.
+
+```{r message=FALSE, warning=FALSE}
+# Having run the code on my machine, the file doesn't need to be downloaded or
+# processed again. Being polite.
+if (file.exists("demographic_table.csv")) {
+  pop_table <- read_csv("demographic_table.csv")
+} else {
+  # This will run if you are following along at home.
+  url <- "https://en.wikipedia.org/wiki/Demographics_of_the_United_States"
+  
+  # Request the file from the URL
+  url_bow <- polite::bow(url)
+  url_bow
+  
+  
+  ind_html <-
+    polite::scrape(url_bow) %>%
+    rvest::html_nodes("table.wikitable") %>%
+    rvest::html_table(fill = TRUE)
+  
+  # The page has many demographic tables; we just need US Demographic table, 1935-2021
+  pop_table <- ind_html[[10]]
+  pop_table <- rename(pop_table, year=names(pop_table)[1])
+  
+  # We only want the years; removing links that are present next to some of them in the table.
+  pop_table$year <- str_extract_all(pop_table$year, "\\d{4}", simplify=TRUE)
+  
+  # We only need the years 2003-2019
+  pop_table_tmp <- pop_table[69:85,]
+  
+  # Getting rid of extraneous clutter in the names
+  pop_table_tmp <- rename(pop_table_tmp, average_population="Average population[67][29][30]")
+  pop_table_tmp <- rename(pop_table_tmp, live_births="Live births[68]")
+  
+  # Necessary data conversions to do math
+  pop_table_tmp$year <- as.numeric(pop_table_tmp$year)
+  avg_pop <- as.numeric(gsub(",","",pop_table_tmp$average_population))
+  live_births <- as.numeric(gsub(",","",pop_table_tmp$live_births))
+  pop_table_tmp$average_population <- avg_pop
+  pop_table_tmp$live_births <- live_births
+  
+  # Writes the processed file to disk
+  write.table(pop_table_tmp, file="demographic_table.csv", sep=",", row.names=FALSE)
+  
+  pop_table <- pop_table_tmp
+}
+
+pop_table %>%
+  select(year, live_births)
+```
+
+Now we're getting somewhere.
+
+```{r}
+ratio <- annual_total$annual_total/pop_table$live_births * 100000
+annual_total$per_100k <- ratio
+ggplot(annual_total, aes(x=year, y=per_100k)) +
+  geom_line(group=1) +
+  geom_point() +
+  ylim(10, 25) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Maternal deaths per 100,000 live births, 2003-2019",
+       x="Year",
+       y="Maternal deaths per 100,000 live births") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+To emphasize the severity of the situation, I took the liberty of finding some unrelated but interesting statistics. The US Department of Labor and MSHA maintain statistics for fatalities relating to coal mines that can be found in the table on [this page](https://arlweb.msha.gov/stats/centurystats/coalstats.asp). Due to the unfortunate formatting of the table, it must be manually entered so we can work with it here.
+
+```{r}
+coal_url = "https://arlweb.msha.gov/stats/centurystats/coalstats.asp"
+
+coal_years = c(2003:2019)
+coal_workers = c(104824, 108734, 116436, 122975, 122936, 133828, 134089, 135500, 143437,
+                 137650, 123259, 116010, 102804, 81485, 82843, 82699, 81361)
+coal_deaths = c(30, 28, 23, 47, 34, 30, 18, 48, 20, 20, 20, 16, 12, 8, 15, 12, 12)
+
+coal_mort <- data.frame(year=coal_years, num_workers=coal_workers, num_deaths=coal_deaths)
+coal_mort <- as_tibble(coal_mort)
+coal_mort <- coal_mort %>%
+  add_column(proportion = coal_mort$num_deaths/coal_mort$num_workers*100000)
+```
+
+Below is a chart comparing the number of maternal mortality cases to the number of fatalities in coal mining per 100,000. Statistically, it has been safer to be a coal miner than the mother of a live infant in the US since 2011.
+
+```{r}
+library(reshape2)
+comparison <- data.frame(year=annual_total$year, Mothers=annual_total$per_100k, `Coal Workers`=coal_mort$proportion)
+comparison <- melt(comparison, id=c("year"))
+
+ggplot() +
+  geom_line(data=comparison, aes(x=year, y=value, color=variable)) +
+  ylim(5, 40) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Deaths per 100,000, 2003-2019",
+       x="Year",
+       y="Deaths per 100,000",
+       colour="annual_total") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+# Move this to helper_functions.R
+parse_macrotrends <- function(mmr) {
+  mmr <- as_tibble(mmr[13:27,]) %>%
+    separate("Macrotrends Data Download", c("year", "month", "day", "per_100k", "change")) %>%
+    select(year, per_100k)
+
+  mmr$year <- as.numeric(mmr$year)
+  mmr$per_100k <- as.numeric(mmr$per_100k)
+  mmr <- mmr %>%
+    add_row(year=2018, per_100k=NA) %>%
+    add_row(year=2019, per_100k=NA)
+  
+  return(mmr)
+}
+```
+
+```{r message=FALSE, warning=FALSE}
+germany_mmr <- read_csv("germany-maternal-mortality-rate.csv")
+canada_mmr <- read_csv("canada-maternal-mortality-rate.csv")
+australia_mmr <- read_csv("australia-maternal-mortality-rate.csv")
+japan_mmr <- read_csv("japan-maternal-mortality-rate.csv")
+poland_mmr <- read_csv("poland-maternal-mortality-rate.csv")
+uk_mmr <- read_csv("united-kingdom-maternal-mortality-rate.csv")
+france_mmr <- read_csv("france-maternal-mortality-rate.csv")
+
+germany_mmr <- parse_macrotrends(germany_mmr)
+canada_mmr <- parse_macrotrends(canada_mmr)
+australia_mmr <- parse_macrotrends(australia_mmr)
+japan_mmr <- parse_macrotrends(japan_mmr)
+poland_mmr <- parse_macrotrends(poland_mmr)
+uk_mmr <- parse_macrotrends(uk_mmr)
+france_mmr <- parse_macrotrends(france_mmr)
+```
+
+For a more direct comparison, we look at maternal mortality in a variety of wealthy, developed nations in the EU and English-speaking worlds.
+
+```{r}
+nation_comparison <- data.frame(year=annual_total$year, us=annual_total$per_100k,
+                         uk=uk_mmr$per_100k,
+                         france=france_mmr$per_100k,
+                         germany=germany_mmr$per_100k,
+                         australia=australia_mmr$per_100k,
+                         canada=canada_mmr$per_100k)
+
+nation_comparison <- melt(nation_comparison, id=c("year"))
+
+ggplot() +
+  geom_line(data=nation_comparison, aes(x=year, y=value, color=variable)) +
+  ylim(0, 25) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Deaths per 100,000, 2003-2019",
+       x="Year",
+       y="Deaths per 100,000",
+       colour="annual_total") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+A few things are worth noting:
+
+- Maternal mortality outside of the US among these nations has either plateaued or is trending downward.
+- The figure for the US has been very high for the entirety of the timeframe.
+- THe US figures are generally rising.
+
+## Maternal Mortality and Race
+Here we subdivide the US figures to answer the question of how wide racial and ethnic disparities are for maternal mortality. This is a test of the hypothesis that the statistics for middle-class Whites will track their counterparts throughout the developed world. First, we plot percentages of maternal mortality for each race over our timeframe.
+
+```{r}
+race_comparison <- mort %>%
+  group_by(year) %>%
+  add_count(name="year_n") %>%
+  ungroup() %>%
+  group_by(year, race_decoded) %>%
+  add_count(name="race_n") %>%
+  select(year, race_decoded, race_n, year_n) %>%
+  distinct(.keep_all=TRUE) %>%
+  mutate(percent = race_n / year_n * 100) %>%
+  arrange(year)
+
+race_comparison
+
+ggplot() +
+  geom_line(data=race_comparison, aes(x=year, y=percent, color=race_decoded)) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Percentage of Annual Maternal Mortality by Race, 2003-2019",
+       x="Year",
+       y="Percent") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Blacks in this timeframe represent approximately 13% of the US population, they represent a substantially outsized portion of cases of maternal mortality. That said, it is also worth noting that outcomes among Blacks on this front have been improving *slightly*, while that for Whites as been worsening *slightly*. This means that, while there is substantial racial inequality in outcomes overall, maternal mortality in the US is worsening without respect to race.
+
+Bearing that in mind, how do these rates compare with the other nations listed above?
+
+```{r}
+# https://www.census.gov/newsroom/releases/archives/2010_census/cb11-cn185.html
+# Blacks were 13% of the US population
+# Whites were 72$ of the US population
+# Proper examination of these figures needs an adjustment to per_100k figures to account for these differences.
+
+#annual_total <- mort %>%
+#  group_by(year) %>%
+#  summarise(annual_total = n())
+
+black_us_mmr <- mort %>%
+  filter(race_decoded == "Black") %>%
+  group_by(year) %>%
+  summarise(annual_total = n())
+
+white_us_mmr <- mort %>%
+  filter(race_decoded == "White") %>%
+  group_by(year) %>%
+  summarise(annual_total = n())
+
+black_ratio <- black_us_mmr$annual_total/pop_table$live_births * 100000
+white_ratio <- white_us_mmr$annual_total/pop_table$live_births * 100000 * 0.72
+
+black_us_mmr <- black_us_mmr %>%
+  mutate(per_100k = black_ratio)
+white_us_mmr <- white_us_mmr %>%
+  mutate(per_100k = white_ratio)
+```
+
+```{r}
+nation_race_comparison <- data.frame(year=annual_total$year, us=annual_total$per_100k,
+                         uk=uk_mmr$per_100k,
+                         france=france_mmr$per_100k,
+                         germany=germany_mmr$per_100k,
+                         australia=australia_mmr$per_100k,
+                         canada=canada_mmr$per_100k)
+
+nation_race_comparison <- melt(nation_comparison, id=c("year"))
+
+ggplot() +
+  geom_line(data=nation_comparison, aes(x=year, y=value, color=variable)) +
+  ylim(0, 25) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Deaths per 100,000, 2003-2019",
+       x="Year",
+       y="Deaths per 100,000",
+       colour="annual_total") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## Socioeconomics Trends
+Unfortunately for us, no direct socioeconomic data was included in the original dataset. Occupation data has been included very recently, in years excluded from this analysis. We have no direct access to things like income, but it might be possible to gain useful insights by looking at a proxy in the form of education levels, which mercifully have been included.
+
+```{r}
+#education_comparison <- mort %>%
+#  mutate_all(funs(str_replace(., "8th grade or less", "Pre-HS diploma")))
+
+edu_with_unknowns <- mort %>%
+  mutate(education_decoded = str_replace(education_decoded, "8th grade or less", "Pre-HS diploma")) %>%
+  mutate(education_decoded = str_replace(education_decoded, "9th-12th grade, no diploma", "Pre-HS diploma")) %>%
+  mutate(education_decoded = str_replace(education_decoded, "associate's degree", "college degree")) %>%
+  mutate(education_decoded = str_replace(education_decoded, "bachelor's degree", "college degree")) %>%
+  group_by(year) %>%
+  add_count(name = "year_n") %>%
+  ungroup() %>%
+  group_by(year, education_decoded) %>%
+  add_count(name = "ed_level_n") %>%
+  select(year, education_decoded, year_n, ed_level_n) %>%
+  distinct(.keep_all = TRUE) %>%
+  mutate(percent = ed_level_n / year_n * 100) %>%
+  arrange(year)
+  
+education_comparison <- mort %>%
+  mutate(education_decoded = str_replace(education_decoded, "8th grade or less", "Pre-HS diploma")) %>%
+  mutate(education_decoded = str_replace(education_decoded, "9th-12th grade, no diploma", "Pre-HS diploma")) %>%
+  mutate(education_decoded = str_replace(education_decoded, "associate's degree", "college degree")) %>%
+  mutate(education_decoded = str_replace(education_decoded, "bachelor's degree", "college degree")) %>%
+  filter(!is.na(education_decoded)) %>%
+  filter(education_decoded != "unknown") %>%
+  group_by(year) %>%
+  add_count(name = "year_n") %>%
+  ungroup() %>%
+  group_by(year, education_decoded) %>%
+  add_count(name = "ed_level_n") %>%
+  select(year, education_decoded, year_n, ed_level_n) %>%
+  distinct(.keep_all = TRUE) %>%
+  mutate(percent = ed_level_n / year_n * 100) %>%
+  arrange(year)
+
+education_comparison
+
+ggplot() +
+  geom_line(data=education_comparison, aes(x=year, y=percent, color=education_decoded)) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Percentage of Maternal Mortality by Education Level, 2003-2019",
+       x="Year",
+       y="Percent")
+
+ggplot() +
+  geom_line(data=edu_with_unknowns, aes(x=year, y=percent, color=education_decoded)) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Percentage of Maternal Mortality by Education Level, 2003-2019",
+       x="Year",
+       y="Percent")
+```
+
+Here we encounter some ambiguity in the analysis. If we include unknowns in education levels, we see that reporting on education improved substantially over this time period. Removing unknown and unavailable values, we see an echo of our graph comparing Whites and Blacks; a fall in representation among people who have not completed a high school diploma, plateauing of those with only a high school education, and a slight (albeit more jittery) increase among those with a 2- or 4-year degree.
+
+## Advancing Maternal Age
+Admittedly, looking in this direction was a bit of an intuitive leap following from the last sections. What does it imply that the only cohort that is trending downward as a percentage is the one without a high school diploma?  It might mean that women too young to have completed high school are getting better access to healthcare. However, since maternal mortality is on the rise in the US in particular, it seems more likely that the average maternal age is increasing. Let's take a look.
+
+```{r}
+mort$age_cohort <- mort$age
+mort <- mort %>%
+  mutate(age_cohort = case_when(age >= 10 & age <= 15 ~ "10-15",
+                                age > 15 & age <= 20 ~ "16-20",
+                                age > 20 & age <= 25 ~ "21-25",
+                                age > 25 & age <= 30 ~ "26-30",
+                                age > 30 & age <= 35 ~ "31-35",
+                                age > 35 & age <= 40 ~ "36-40",
+                                age > 40 & age <= 45 ~ "41-45",
+                                age > 45 & age <= 50 ~ "46-50",
+                                age > 50 & age <= 55 ~ "51-55",
+                                age > 55 ~ "55+")) %>%
+  relocate(age_cohort, .after="age")
+
+age_comparison <- mort %>%
+  group_by(year) %>%
+  add_count(name="year_n") %>%
+  ungroup() %>%
+  group_by(year, age_cohort) %>%
+  add_count(name="cohort_n") %>%
+  select(year, age_cohort, cohort_n, year_n) %>%
+  mutate(percent = cohort_n / year_n * 100) %>%
+  distinct(.keep_all=TRUE) %>%
+  arrange(year, desc(percent))
+
+age_comparison
+
+ggplot() +
+  geom_line(data=age_comparison, aes(x=year, y=percent, color=age_cohort)) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Percent of Maternal Mortality by 5-Year Age Cohorts, 2003-2019",
+       x="Year",
+       y="Percent") +
+  theme(plot.title = element_text(hjust=0.5))
+
+ggplot() +
+  geom_line(data=age_comparison, aes(x=year, y=cohort_n, color=age_cohort)) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Counts of Maternal Mortality by 5-Year Age Cohorts, 2003-2019",
+       x="Year",
+       y="Count") +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+This is a bit of a tangle, indicating that the 5-year delineations are perhaps too narrow. That said, some trends in the age groups are evident in a way that suggests we can cluster them more tightly. The groups 26-30 and 31-35 track each other in an interesting way. 21-25 is on the decline, so it might be better served as its own group. Very interestingly, it looks like 46+ could also be its own category, as these figures look to be even more tightly coupled than the first one mentioned. Let's get this cleaned up a little.
+
+```{r}
+mort$age_cohort <- mort$age
+mort <- mort %>%
+  mutate(age_cohort = case_when(age >= 10 & age <= 15 ~ "10-15",
+                                age > 15 & age <= 20 ~ "16-20",
+                                age > 20 & age <= 30 ~ "21-30",
+                                age > 30 & age <= 40 ~ "31-40",
+                                age > 40 & age <= 50 ~ "40-50",
+                                age > 50 ~ "50+")) %>%
+  relocate(age_cohort, .after="age")
+
+age_comparison_compressed <- mort %>%
+  group_by(year) %>%
+  add_count(name="year_n") %>%
+  ungroup() %>%
+  group_by(year, age_cohort) %>%
+  add_count(name="cohort_n") %>%
+  select(year, age_cohort, cohort_n, year_n) %>%
+  mutate(percent = cohort_n / year_n * 100) %>%
+  distinct(.keep_all=TRUE) %>%
+  arrange(year, desc(percent))
+
+age_comparison_compressed
+
+ggplot() +
+  geom_line(data=age_comparison_compressed, aes(x=year, y=percent, color=age_cohort)) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Percent of Maternal Mortality by 10-Year Age Cohorts, 2003-2019",
+       x="Year",
+       y="Percent") +
+  theme(plot.title = element_text(hjust=0.5))
+
+ggplot() +
+  geom_line(data=age_comparison_compressed, aes(x=year, y=cohort_n, color=age_cohort)) +
+  scale_x_continuous(breaks = seq(2003, 2019, len=5)) +
+  labs(title="Counts of Maternal Mortality by 10-Year Age Cohorts, 2003-2019",
+       x="Year",
+       y="Count") +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+Simply making cohorts about 10 years wide yields a much stronger signal. It is worth noting that broader cohorts of 21-40 and 40+ follow similar patterns. I suspect this reflects similarities in treatment of these kinds of pregnancy. For instance, there may be similar health concerns in women over 40 overall that doctors would be looking out for, or IVF treatments and their attendant care could be the same. This warrants further investigation. On this particular occasion, looking at percentages alone was actually muddying the signal. Here we have been seeing an increase in mortality cases in both 21-30 and 31-40 cohorts, and a *decrease* in cohorts over 40. Women having children in their 30s is consistently the largest share of these cases and has been since 2014.
+
+## Specific Conditions

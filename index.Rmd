@@ -17,7 +17,7 @@ The impetus for this case study was an article from the Guardian reporting that 
 ### Initial Questions to Investigate
 Keeping the above in mind, these were some of the starting points that this case study was meant to investigate what demographic changes could be responsible for the increase in maternal mortality in the US, and if any demographic groups are particularly affected by the changes.
 
-## Findings
+### Findings
 
 - Maternal age and mortality have a correlation of **87%**, the strongest correlation I was able to find.
 - **Coal mining has been safer than pregnancy in the US for over a decade!** Fatalities per 100,000 coal workers dropped below the same figure for mothers in 2011 and has never recovered.

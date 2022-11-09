@@ -21,7 +21,7 @@ while getopts 'ay:' OPTION; do
 			echo ${OUTFILE}
 			7z e Nat${YEAR}us.zip
 			split -l 250000 ${OUTFILE}
-			python3 natality_row_parser.py -o "natality_${YEAR}.csv"
+			python3 natality_row_parser-pre14.py -o "natality_${YEAR}.csv"
 			rm x*
 			rm ${OUTFILE}
 			;;

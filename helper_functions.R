@@ -164,5 +164,12 @@ parse_macrotrends <- function(mmr) {
   mmr <- as_tibble(mmr[13:27,]) %>%
     separate("Macrotrends Data Download", c("year", "month", "day", "per_100k", "change")) %>%
     select(year, per_100k)
+  
+  mmr$year <- as.numeric(mmr$year)
+  mmr$per_100k <- as.numeric(mmr$per_100k)
+  mmr <- mmr %>%
+    add_row(year=2018, per_100k=NA) %>%
+    add_row(year=2019, per_100k=NA)
+  
   return(mmr)
 }

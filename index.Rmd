@@ -11,10 +11,10 @@ knitr::opts_chunk$set(root.dir = "/home/mireles/horseless/maternal_mortality/mor
 source("~/horseless/maternal_mortality/mortality/helper_functions.R")
 ```
 
-## Introduction
+### Introduction
 The impetus for this case study was an article from the Guardian reporting that [US maternal deaths rose in 2020, with Black mothers at far higher risk](https://www.theguardian.com/us-news/2022/feb/23/us-maternal-deaths-mortality-black-mothers-covid). This inspired me to do a more detailed examination of the data. Having looked at statistics comparing US and western European populations before, I have noticed that the broad statistics sometimes look different for the US as a whole than when it is divided into sub-populations. For instance, the birth rate among White middle-class Americans more closely tracks their European counterparts than would be expected. Thus, it is possible that recommendations for changes to fix any given problem might be specific to these sub-populations.
 
-## Initial Questions to Investigate
+### Initial Questions to Investigate
 Keeping the above in mind, these were some of the starting points that this case study was meant to investigate what demographic changes could be responsible for the increase in maternal mortality in the US, and if any demographic groups are particularly affected by the changes.
 
 ## Findings
@@ -25,7 +25,7 @@ Keeping the above in mind, these were some of the starting points that this case
 - *However*, maternal mortality has been getting worse across racial groups in approximately the same way. The correlation between Black and White patients is 93%.
 - All education levels, the closest approximation to socioeconomic status available in the dataset, are similarly affected.
 
-## Loading the Data
+### Loading the Data
 The primary source for data regarding maternal mortality is from the National Center for Health Statistic's Division of Vital Statistics, the public-facing portal for which can be found [here](https://www.cdc.gov/nchs/data_access/VitalStatsOnline.htm). After some initial confusion about the reporting, I determined that this case study would use files found under the heading Mortality Multiple Cause Files. These files are not specific to maternal mortality; they contain all causes of mortality in the US. Each death is assigned an ICD-10 code for a condition that was described as being the underlying cause of death, and up to 20 additional ICD-10 conditions that the patient also presented with.
 
 The task of cleaning and validating the extraneous data fell to a custom Python script that will be linked in the resources of this case study. Broadly, the method of separating instances of maternal mortality was a matter of extracting ICD-10 code numbers A34, O00-O95, and O98-O99 from the underlying causes column and saving them to CSV files for their respective years, per the above CDC page.
@@ -262,7 +262,7 @@ What does our dataframe actually look like?
 mort
 ```
 
-## Start of the Exploration
+### Start of the Exploration
 First, we can start looking at some summary statistics to get a sense of where to start.
 
 ```{r, fig.align='center'}
@@ -430,7 +430,7 @@ A few things are worth noting:
 - The figure for the US has been very high for the entirety of the timeframe.
 - THe US figures are generally rising.
 
-## Maternal Mortality and Race
+### Maternal Mortality and Race
 Here we subdivide the US figures to answer the question of how wide racial and ethnic disparities are for maternal mortality. This is a test of the hypothesis that the statistics for middle-class Whites will track their counterparts throughout the developed world. First, we plot percentages of maternal mortality for each race over our timeframe.
 
 ```{r, figures-side, fig.show='hold', out.width="50%"}
@@ -514,7 +514,7 @@ white_us_mmr <- white_us_mmr %>%
   mutate(per_100k = white_ratio)
 ```
 
-```{r, fig.align='center'}
+```{r, fig.align='center', echo=FALSE, message=FALSE, warning=FALSE}
 nation_race_comparison <- data.frame(year=annual_total$year, us=annual_total$per_100k,
                          uk=uk_mmr$per_100k,
                          france=france_mmr$per_100k,
@@ -523,7 +523,9 @@ nation_race_comparison <- data.frame(year=annual_total$year, us=annual_total$per
                          canada=canada_mmr$per_100k)
 
 nation_race_comparison <- melt(nation_comparison, id=c("year"))
+```
 
+```{r, fig.align='center', message=FALSE, warning=FALSE}
 ggplot() +
   geom_line(data=nation_comparison, aes(x=year, y=value, color=variable)) +
   ylim(0, 25) +
@@ -535,7 +537,7 @@ ggplot() +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-## Socioeconomic Trends
+### Socioeconomic Trends
 Unfortunately for us, no direct socioeconomic data was included in the original dataset. Occupation data has been included very recently, in years excluded from this analysis. We have no direct access to things like income, but it might be possible to gain useful insights by looking at a proxy in the form of education levels, which mercifully have been included.
 
 ```{r}
@@ -606,10 +608,10 @@ ggplot() +
 
 Here we encounter some ambiguity in the analysis. If we include unknowns in education levels, we see that reporting on education improved substantially over this time period. Removing unknown and unavailable values, we see an echo of our graph comparing Whites and Blacks; a fall in representation among people who have not completed a high school diploma, plateauing of those with only a high school education, and a slight (albeit more jittery) increase among those with a 2- or 4-year degree.
 
-## Advancing Maternal Age
+### Advancing Maternal Age
 Admittedly, looking in this direction was a bit of an intuitive leap following from the last sections. What does it imply that the only cohort that is trending downward as a percentage is the one without a high school diploma?  It might mean that women too young to have completed high school are getting better access to healthcare. However, since maternal mortality is on the rise in the US in particular, it seems more likely that the average maternal age is increasing. Let's take a look.
 
-```{r}
+```{r, fig.align='center'}
 mort$age_cohort <- mort$age
 mort <- mort %>%
   mutate(age_cohort = case_when(age >= 10 & age <= 15 ~ "10-15",
@@ -656,7 +658,7 @@ ggplot() +
 
 This is a bit of a tangle, indicating that the 5-year delineations are perhaps too narrow. That said, some trends in the age groups are evident in a way that suggests we can cluster them more tightly. The groups 26-30 and 31-35 track each other in an interesting way. 21-25 is on the decline, so it might be better served as its own group. Very interestingly, it looks like 46+ could also be its own category, as these figures look to be even more tightly coupled than the first one mentioned. Let's get this cleaned up a little.
 
-```{r}
+```{r, fig.align='center'}
 mort$age_cohort <- mort$age
 mort <- mort %>%
   mutate(age_cohort = case_when(age >= 10 & age <= 15 ~ "10-15",
@@ -701,7 +703,7 @@ Simply making cohorts about 10 years wide yields a much stronger signal. It is w
 
 To put further emphasis on this point, we can chart summary statistics for maternal ages. Below, we plot median and average ages, which more closely track recent changes in maternal mortality than anything that has been examined so far.
 
-```{r}
+```{r, fig.align='center'}
 ages <- mort %>%
   group_by(year) %>%
   filter(!is.na(age)) %>%
@@ -728,6 +730,7 @@ ggplot() +
        y="Median Age") +
   theme(plot.title = element_text(hjust=0.5))
 ```
+
 And with this, we can plot the correlation coefficient. This measures the statistical strength of the relationship between two variables.
 
 ```{r, fig.align='center'}
@@ -746,11 +749,11 @@ ggplot(death_vs_age, aes(x=deaths, y=avg_ages)) +
            label=str_interp("Correlation is ${correlation}"))
 ```
 
-## Final Thoughts and Future Directions
+### Final Thoughts and Future Directions
 
 The high correlation between advancing maternal age and the mortality rate begs the question, **why is maternal age increasing in the first place?** My first thought is that anxiety around the economy fails to inspire confidence in parenthood in the first place. Looking at fertility numbers, we notice a sharp decline in fertility in the US after the 2008 housing crisis.
 
-```{r, fig.align='center'}
+```{r, fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
 fertility <- read_csv("united-states-population-2022-11-07.csv")
 fertility <- as_tibble(fertility[63:79,]) %>%
   separate("Macrotrends Data Download", c("year", "births_per_woman", "change"), sep=",", convert = TRUE) %>%

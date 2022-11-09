@@ -1,9 +1,13 @@
 *.sw*
-*.csv*
 *.zip
 *.txt
 *.dat
 *.DUSMCPUB
 *.pdf
+*.csv#
+Nat*
 VS*
 ueg.py
+
+natality*
+cardiac*
